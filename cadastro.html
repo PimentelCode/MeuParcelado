@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeuParcelado - Cadastro</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos específicos para o fundo da página */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        body {
+            background-color: #1a1a1a;
+            background-image: url('img/banner.jpg');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            width: 100%;
+        }
+        
+        .cadastro-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+            width: 100%;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container cadastro-page">
+        <div class="login-container">
+            <div class="logo-container">
+                <img src="img/logo.png" alt="MeuParcelado Logo" class="logo">
+            </div>
+            
+            <div id="cadastro-message" class="alert" style="display: none;"></div>
+            
+            <form id="cadastro-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nome">Nome Completo <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <input type="text" id="nome" name="nome" class="form-control" required>
+                            <span class="validation-message" id="nome-validation"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">E-mail <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <input type="email" id="email" name="email" class="form-control" required>
+                            <span class="validation-message" id="email-validation"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Senha <span class="required">*</span></label>
+                    <div class="input-wrapper password-wrapper">
+                        <input type="password" id="password" name="password" class="form-control" required>
+                        <button type="button" id="toggle-password" class="toggle-password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <span class="validation-message" id="password-validation"></span>
+                    </div>
+                    <div class="password-strength-container">
+                        <div class="password-strength-meter">
+                            <div class="strength-bar">
+                                <div class="strength-indicator" id="strength-indicator"></div>
+                            </div>
+                            <span class="strength-text" id="strength-text">Força da senha</span>
+                        </div>
+                        <div class="password-tips">
+                            <p>A senha deve conter:</p>
+                            <div class="password-requirements">
+                                <div class="requirement" id="length-check"><i class="fas fa-times-circle"></i> Mínimo de 8 caracteres</div>
+                                <div class="requirement" id="uppercase-check"><i class="fas fa-times-circle"></i> Pelo menos 1 letra maiúscula</div>
+                                <div class="requirement" id="number-check"><i class="fas fa-times-circle"></i> Pelo menos 1 número</div>
+                                <div class="requirement" id="special-check"><i class="fas fa-times-circle"></i> Pelo menos 1 caractere especial</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm-password">Confirmar Senha <span class="required">*</span></label>
+                    <div class="input-wrapper password-wrapper">
+                        <input type="password" id="confirm-password" name="confirm-password" class="form-control" required>
+                        <button type="button" id="toggle-confirm-password" class="toggle-password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <span class="validation-message" id="confirm-password-validation"></span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" id="cadastro-button" class="btn btn-primary" disabled>Cadastrar</button>
+                </div>
+                
+                <div class="form-footer">
+                    <p>Já tem uma conta? <a href="index.html" class="login-link">Faça login</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="js/storage.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cadastroForm = document.getElementById('cadastro-form');
+            const nomeInput = document.getElementById('nome');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirm-password');
+            const cadastroButton = document.getElementById('cadastro-button');
+            const cadastroMessage = document.getElementById('cadastro-message');
+            
+            const nomeValidation = document.getElementById('nome-validation');
+            const emailValidation = document.getElementById('email-validation');
+            const passwordValidation = document.getElementById('password-validation');
+            const confirmPasswordValidation = document.getElementById('confirm-password-validation');
+            
+            const strengthIndicator = document.getElementById('strength-indicator');
+            const strengthText = document.getElementById('strength-text');
+            
+            const lengthCheck = document.getElementById('length-check');
+            const uppercaseCheck = document.getElementById('uppercase-check');
+            const numberCheck = document.getElementById('number-check');
+            const specialCheck = document.getElementById('special-check');
+            
+            const togglePassword = document.getElementById('toggle-password');
+            const toggleConfirmPassword = document.getElementById('toggle-confirm-password');
+            
+            // Função para validar nome
+            function validateNome() {
+                if (!nomeInput.value) {
+                    nomeValidation.textContent = "Preencha seu nome completo";
+                    return false;
+                } else if (nomeInput.value.length < 3) {
+                    nomeValidation.textContent = "Nome muito curto";
+                    return false;
+                } else if (!nomeInput.value.includes(' ')) {
+                    nomeValidation.textContent = "Informe nome e sobrenome";
+                    return false;
+                } else {
+                    nomeValidation.textContent = "";
+                    return true;
+                }
+            }
+            
+            // Função para validar email
+            function validateEmail() {
+                if (!emailInput.value) {
+                    emailValidation.textContent = "Preencha seu e-mail";
+                    return false;
+                } else if (!emailInput.validity.valid) {
+                    emailValidation.textContent = "E-mail inválido";
+                    return false;
+                } else {
+                    // Verificar se email já existe
+                    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+                    const emailExists = usuarios.some(u => u.email === emailInput.value);
+                    
+                    if (emailExists) {
+                        emailValidation.textContent = "Este e-mail já está cadastrado";
+                        return false;
+                    } else {
+                        emailValidation.textContent = "";
+                        return true;
+                    }
+                }
+            }
+            
+            // Função para verificar força da senha
+            function checkPasswordStrength(password) {
+                let strength = 0;
+                
+                // Verificar comprimento
+                const hasLength = password.length >= 8;
+                if (hasLength) {
+                    strength += 25;
+                    lengthCheck.querySelector('i').className = 'fas fa-check-circle';
+                    lengthCheck.querySelector('i').style.color = 'var(--success)';
+                } else {
+                    lengthCheck.querySelector('i').className = 'fas fa-times-circle';
+                    lengthCheck.querySelector('i').style.color = 'var(--danger)';
+                }
+                
+                // Verificar letra maiúscula
+                const hasUppercase = /[A-Z]/.test(password);
+                if (hasUppercase) {
+                    strength += 25;
+                    uppercaseCheck.querySelector('i').className = 'fas fa-check-circle';
+                    uppercaseCheck.querySelector('i').style.color = 'var(--success)';
+                } else {
+                    uppercaseCheck.querySelector('i').className = 'fas fa-times-circle';
+                    uppercaseCheck.querySelector('i').style.color = 'var(--danger)';
+                }
+                
+                // Verificar número
+                const hasNumber = /[0-9]/.test(password);
+                if (hasNumber) {
+                    strength += 25;
+                    numberCheck.querySelector('i').className = 'fas fa-check-circle';
+                    numberCheck.querySelector('i').style.color = 'var(--success)';
+                } else {
+                    numberCheck.querySelector('i').className = 'fas fa-times-circle';
+                    numberCheck.querySelector('i').style.color = 'var(--danger)';
+                }
+                
+                // Verificar caractere especial
+                const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+                if (hasSpecial) {
+                    strength += 25;
+                    specialCheck.querySelector('i').className = 'fas fa-check-circle';
+                    specialCheck.querySelector('i').style.color = 'var(--success)';
+                } else {
+                    specialCheck.querySelector('i').className = 'fas fa-times-circle';
+                    specialCheck.querySelector('i').style.color = 'var(--danger)';
+                }
+                
+                // Atualizar indicador de força
+                strengthIndicator.style.width = strength + '%';
+                
+                // Definir cor e texto com base na força
+                if (strength < 25) {
+                    strengthIndicator.style.backgroundColor = 'var(--danger)';
+                    strengthText.textContent = 'Senha muito fraca';
+                    strengthText.style.color = 'var(--danger)';
+                } else if (strength < 50) {
+                    strengthIndicator.style.backgroundColor = 'var(--warning)';
+                    strengthText.textContent = 'Senha fraca';
+                    strengthText.style.color = 'var(--warning)';
+                } else if (strength < 75) {
+                    strengthIndicator.style.backgroundColor = 'var(--warning)';
+                    strengthText.textContent = 'Senha média';
+                    strengthText.style.color = 'var(--warning)';
+                } else if (strength < 100) {
+                    strengthIndicator.style.backgroundColor = 'var(--success)';
+                    strengthText.textContent = 'Senha forte';
+                    strengthText.style.color = 'var(--success)';
+                } else {
+                    strengthIndicator.style.backgroundColor = 'var(--success)';
+                    strengthText.textContent = 'Senha excelente';
+                    strengthText.style.color = 'var(--success)';
+                }
+                
+                return strength >= 75; // Retorna true se a senha for forte o suficiente
+            }
+            
+            // Função para validar senha
+            function validatePassword() {
+                if (!passwordInput.value) {
+                    passwordValidation.textContent = "Preencha sua senha";
+                    return false;
+                } else {
+                    const isStrong = checkPasswordStrength(passwordInput.value);
+                    if (!isStrong) {
+                        passwordValidation.textContent = "Senha não atende aos requisitos mínimos";
+                        return false;
+                    } else {
+                        passwordValidation.textContent = "";
+                        return true;
+                    }
+                }
+            }
+            
+            // Função para validar confirmação de senha
+            function validateConfirmPassword() {
+                if (!confirmPasswordInput.value) {
+                    confirmPasswordValidation.textContent = "Confirme sua senha";
+                    return false;
+                } else if (confirmPasswordInput.value !== passwordInput.value) {
+                    confirmPasswordValidation.textContent = "As senhas não coincidem";
+                    return false;
+                } else {
+                    confirmPasswordValidation.textContent = "";
+                    return true;
+                }
+            }
+            
+            // Função para verificar se o formulário está válido
+            function checkFormValidity() {
+                const isNomeValid = validateNome();
+                const isEmailValid = validateEmail();
+                const isPasswordValid = validatePassword();
+                const isConfirmPasswordValid = validateConfirmPassword();
+                
+                cadastroButton.disabled = !(isNomeValid && isEmailValid && isPasswordValid && isConfirmPasswordValid);
+            }
+            
+            // Adicionar eventos de validação
+            nomeInput.addEventListener('input', function() {
+                validateNome();
+                checkFormValidity();
+            });
+            
+            emailInput.addEventListener('input', function() {
+                validateEmail();
+                checkFormValidity();
+            });
+            
+            passwordInput.addEventListener('input', function() {
+                validatePassword();
+                validateConfirmPassword(); // Revalidar confirmação quando a senha mudar
+                checkFormValidity();
+            });
+            
+            confirmPasswordInput.addEventListener('input', function() {
+                validateConfirmPassword();
+                checkFormValidity();
+            });
+            
+            // Mostrar/ocultar senha
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+            
+            toggleConfirmPassword.addEventListener('click', function() {
+                const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                confirmPasswordInput.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+            
+            // Enviar formulário
+            cadastroForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Verificar se todos os campos são válidos
+                if (!validateNome() || !validateEmail() || !validatePassword() || !validateConfirmPassword()) {
+                    return;
+                }
+                
+                // Criar novo usuário
+                const novoUsuario = {
+                    nome: nomeInput.value,
+                    email: emailInput.value,
+                    senha: passwordInput.value
+                };
+                
+                // Salvar no localStorage
+                const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+                usuarios.push(novoUsuario);
+                localStorage.setItem('usuarios', JSON.stringify(usuarios));
+                
+                // Mostrar mensagem de sucesso
+                cadastroMessage.textContent = "Cadastro realizado com sucesso! Redirecionando para o login...";
+                cadastroMessage.className = "alert alert-success";
+                cadastroMessage.style.display = "block";
+                
+                // Limpar formulário
+                cadastroForm.reset();
+                
+                // Redirecionar para login após 3 segundos
+                setTimeout(function() {
+                    window.location.href = "index.html";
+                }, 3000);
+            });
+        });
+    </script>
+    
+    <style>
+        /* Estilos para o formulário de cadastro */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 1rem;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .password-strength-container {
+            margin-top: 8px;
+        }
+        
+        .password-requirements {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        
+        .requirement {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        .password-tips p {
+            margin: 5px 0;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        
+        .password-tips {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+        
+        .strength-bar {
+            height: 5px;
+            background-color: #444;
+            border-radius: 3px;
+            margin: 5px 0;
+        }
+        
+        .strength-indicator {
+            height: 100%;
+            width: 0;
+            border-radius: 3px;
+            transition: width 0.3s, background-color 0.3s;
+        }
+        
+        .strength-text {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+        
+        /* Ajustes para telas menores */
+        @media (max-width: 768px) {
+            .password-requirements {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Ajustes para o container de cadastro */
+        .cadastro-container {
+            max-width: 500px;
+            width: 100%;
+            background-color: rgba(42, 42, 42, 0.9);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</body>
+</html>
