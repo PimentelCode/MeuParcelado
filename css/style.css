@@ -760,3 +760,80 @@ h4 {
     color: #ff4d4d;
     font-size: 1.2rem;
 }
+
+/* Estilo para os botões de ação */
+.acoes-container {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-success {
+    background-color: #4CD964;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #3CB853;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(76, 217, 100, 0.3);
+}
+
+.btn-primary {
+    background-color: #820AD1;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #9B30E8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(130, 10, 209, 0.3);
+}
+
+.btn-danger {
+    background-color: #FF3B30;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #FF5E54;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 59, 48, 0.3);
+}
+
+/* Estilo para as tags de status */
+.status-tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+.pago {
+    background-color: #4CD964;
+    color: white;
+}
+
+.pendente {
+    background-color: #FFCC00;
+    color: #1A1A1A;
+}
+
+.vencido {
+    background-color: #FF3B30;
+    color: white;
+}

@@ -8,6 +8,58 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Estilos para o preloader */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #0d0d0d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            overflow: hidden;
+        }
+        
+        #preloader.show {
+            opacity: 1;
+        }
+        
+        #preloader.hide {
+            opacity: 0;
+        }
+        
+        #preloader img {
+            width: 120%;
+            max-width: 6000px;
+            height: auto;
+            transform: scale(0.8);
+            transition: transform 0.5s ease;
+            padding: 0 20px;
+        }
+        
+        #preloader.show img {
+            transform: scale(1);
+        }
+        
+        /* Garantir que o preloader cubra toda a tela em dispositivos móveis */
+        @media (max-width: 768px) {
+            #preloader {
+                width: 100%;
+                height: 100%;
+                position: fixed;
+            }
+            
+            #preloader img {
+                max-width: 400px;
+                width: 100%;
+            }
+        }
+        
         /* Estilos específicos para a página de login */
         html, body {
             height: 100%;
@@ -37,17 +89,12 @@
             position: relative;
             z-index: 1;
             width: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
         
-        .login-page::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            z-index: -1;
+        .login-page.show {
+            opacity: 1;
         }
         
         .login-container {
@@ -204,7 +251,12 @@
     </style>
 </head>
 <body>
-    <div class="container login-page">
+    <!-- Preloader -->
+    <div id="preloader">
+        <img src="./img/screenshot.png" alt="Logo MeuParcelado">
+    </div>
+    
+    <div class="container login-page" id="login-content">
         <div class="login-container">
             <div class="logo-container">
                 <img src="img/logo.png" alt="MeuParcelado Logo" class="logo">
@@ -248,6 +300,24 @@
     <script src="js/storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Preloader animation
+            const preloader = document.getElementById('preloader');
+            const loginContent = document.getElementById('login-content');
+            
+            // Show preloader with animation
+            preloader.classList.add('show');
+            
+            // Hide preloader after 2 seconds and show login content
+            setTimeout(() => {
+                preloader.classList.add('hide');
+                loginContent.classList.add('show');
+                
+                // Remove preloader from DOM after animation completes
+                setTimeout(() => {
+                    preloader.remove();
+                }, 500);
+            }, 2000);
+            
             const loginForm = document.getElementById('login-form');
             const emailInput = document.getElementById('email');
             const passwordInput = document.getElementById('password');

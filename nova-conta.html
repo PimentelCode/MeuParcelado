@@ -124,116 +124,71 @@
         }
         
         .parcelas-container {
-            margin-top: 1rem;
-            padding: 1rem;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
             background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
+            border-radius: 12px;
             display: none;
-        }
-        
-        /* Estilos para inputs e botões */
-        .form-control {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #3a3a3a;
-            border-radius: 8px;
-            background-color: rgba(26, 26, 26, 0.8);
-            color: white;
-            font-size: 1rem;
-            transition: all 0.3s;
-            box-sizing: border-box;
-        }
-        
-        .form-control:focus {
-            border-color: #820AD1;
-            box-shadow: 0 0 0 2px rgba(130, 10, 209, 0.3);
-            outline: none;
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            gap: 0.5rem;
-        }
-        
-        .btn-primary {
-            background-color: #820AD1;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: #9b2fe6;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(130, 10, 209, 0.4);
-        }
-        
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-        
-        .btn-secondary {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            text-decoration: none;
-        }
-        
-        .btn-secondary:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
         
-        /* Estilos para a lista de parcelas */
-        .parcela-item {
+        .parcelas-container h4 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: #fff;
             display: flex;
-            justify-content: space-between;
-            padding: 0.75rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s;
+            align-items: center;
+            gap: 8px;
         }
         
-        .parcela-item:last-child {
-            border-bottom: none;
+        .parcela-item {
+            margin-bottom: 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
         
-        .parcela-item:hover {
-            background-color: rgba(255, 255, 255, 0.05);
+        .parcela-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #820AD1;
         }
         
-        /* Barra de progresso */
+        /* Barra de progresso melhorada */
         .progress-container {
             margin: 1.5rem 0;
         }
         
         .progress-bar {
-            height: 8px;
+            height: 10px;
             background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
+            border-radius: 5px;
             overflow: hidden;
             position: relative;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
         }
         
         .progress-fill {
             height: 100%;
             background-color: #820AD1;
-            border-radius: 4px;
+            background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+            background-size: 20px 20px;
+            border-radius: 5px;
             transition: width 0.5s ease;
+            animation: progress-animation 2s linear infinite;
+        }
+        
+        @keyframes progress-animation {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 0; }
         }
         
         .progress-labels {
             display: flex;
             justify-content: space-between;
             margin-top: 0.5rem;
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
         }
         
         /* Status de vencimento */
@@ -385,7 +340,7 @@
                             <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
                         </div>
                         <div class="progress-labels">
-                            <span>0 pagas</span>
+                            <span id="parcelas-pagas">0 pagas</span>
                             <span id="total-parcelas">0 parcelas</span>
                         </div>
                     </div>
@@ -471,6 +426,9 @@
                 const valorParcela = valor / numParcelas;
                 listaParcelas.innerHTML = '';
                 
+                // Atualizar barra de progresso
+                let parcelasPagas = 0;
+                
                 for (let i = 0; i < numParcelas; i++) {
                     const dataVencimento = new Date(dataCompra);
                     dataVencimento.setMonth(dataVencimento.getMonth() + i);
@@ -478,26 +436,129 @@
                     const parcelaItem = document.createElement('div');
                     parcelaItem.className = 'parcela-item';
                     
+                    // Determinar se a parcela está vencida
+                    const hoje = new Date();
+                    const estaVencida = dataVencimento < hoje;
+                    
+                    // Determinar status padrão da parcela
+                    let statusParcela = 'pendente';
+                    let corFundo = '#FFC107'; // Amarelo para pendente
+                    
+                    if (status === 'pago') {
+                        // Se o status geral é pago, verificamos cada parcela individualmente
+                        if (estaVencida) {
+                            // Se a data já passou, assumimos que foi paga
+                            statusParcela = 'pago';
+                            corFundo = '#4CD964'; // Verde para pago
+                            parcelasPagas++;
+                        }
+                    }
+                    
+                    parcelaItem.style.backgroundColor = corFundo;
+                    parcelaItem.style.borderRadius = '8px';
+                    parcelaItem.style.marginBottom = '8px';
+                    parcelaItem.style.padding = '12px';
+                    parcelaItem.style.color = statusParcela === 'pago' ? '#fff' : '#333';
+                    
+                    // Criar elementos da parcela
+                    const parcelaNumero = document.createElement('div');
+                    parcelaNumero.style.fontWeight = 'bold';
+                    parcelaNumero.textContent = `${i+1}/${numParcelas}`;
+                    
+                    const parcelaData = document.createElement('div');
+                    parcelaData.textContent = dataVencimento.toLocaleDateString('pt-BR');
+                    
+                    const parcelaValorElem = document.createElement('div');
+                    parcelaValorElem.textContent = `R$ ${valorParcela.toFixed(2)}`;
+                    parcelaValorElem.style.fontWeight = 'bold';
+                    
+                    const parcelaStatus = document.createElement('div');
+                    parcelaStatus.textContent = statusParcela === 'pago' ? 'pago' : 'pendente';
+                    parcelaStatus.style.textAlign = 'right';
+                    
+                    // Se o status geral for "pago", adicionar checkbox para cada parcela
+                    if (status === 'pago') {
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.id = `parcela-${i+1}`;
+                        checkbox.className = 'parcela-checkbox';
+                        checkbox.dataset.parcela = i+1;
+                        checkbox.checked = estaVencida; // Pré-selecionar parcelas vencidas
+                        checkbox.style.width = '20px';
+                        checkbox.style.height = '20px';
+                        checkbox.style.accentColor = '#820AD1';
+                        
+                        checkbox.addEventListener('change', function() {
+                            // Atualizar visual quando o checkbox mudar
+                            if (this.checked) {
+                                parcelaItem.style.backgroundColor = '#4CD964';
+                                parcelaItem.style.color = '#fff';
+                                parcelaStatus.textContent = 'pago';
+                                parcelasPagas++;
+                            } else {
+                                parcelaItem.style.backgroundColor = '#FFC107';
+                                parcelaItem.style.color = '#333';
+                                parcelaStatus.textContent = 'pendente';
+                                parcelasPagas--;
+                            }
+                            
+                            // Atualizar barra de progresso
+                            const percentualPago = (parcelasPagas / numParcelas) * 100;
+                            progressFill.style.width = `${percentualPago}%`;
+                            document.getElementById('parcelas-pagas').textContent = `${parcelasPagas} pagas`;
+                        });
+                        
+                        parcelaStatus.innerHTML = '';
+                        parcelaStatus.appendChild(checkbox);
+                    }
+                    
+                    // Montar layout da parcela
+                    const parcelaLayout = document.createElement('div');
+                    parcelaLayout.style.display = 'flex';
+                    parcelaLayout.style.justifyContent = 'space-between';
+                    parcelaLayout.style.alignItems = 'center';
+                    
                     const parcelaInfo = document.createElement('div');
-                    parcelaInfo.className = 'parcela-info';
-                    parcelaInfo.innerHTML = `<strong>Parcela ${i+1}/${numParcelas}</strong> - Vencimento: ${dataVencimento.toLocaleDateString()}`;
+                    parcelaInfo.appendChild(parcelaNumero);
+                    parcelaInfo.appendChild(parcelaData);
                     
-                    const parcelaValor = document.createElement('div');
-                    parcelaValor.className = 'parcela-valor';
-                    parcelaValor.innerHTML = `R$ ${valorParcela.toFixed(2)}`;
+                    const parcelaValorStatus = document.createElement('div');
+                    parcelaValorStatus.appendChild(parcelaValorElem);
+                    parcelaValorStatus.appendChild(parcelaStatus);
                     
-                    parcelaItem.appendChild(parcelaInfo);
-                    parcelaItem.appendChild(parcelaValor);
+                    parcelaLayout.appendChild(parcelaInfo);
+                    parcelaLayout.appendChild(parcelaValorStatus);
+                    
+                    parcelaItem.appendChild(parcelaLayout);
                     listaParcelas.appendChild(parcelaItem);
                 }
                 
                 // Atualizar barra de progresso
-                const parcelasPagas = status === 'pago' ? numParcelas : 0;
                 const percentualPago = (parcelasPagas / numParcelas) * 100;
                 progressFill.style.width = `${percentualPago}%`;
+                document.getElementById('parcelas-pagas').textContent = `${parcelasPagas} pagas`;
                 totalParcelasSpan.textContent = `${numParcelas} parcelas`;
                 
                 parcelasPreview.style.display = 'block';
+            }
+            
+            // Função para atualizar a barra de progresso com base nas parcelas selecionadas
+            function atualizarBarraProgresso() {
+                const numParcelas = parseInt(numeroParcelasSelect.value);
+                const status = statusSelect.value;
+                
+                if (status === 'pago') {
+                    // Contar parcelas marcadas como pagas
+                    const checkboxes = document.querySelectorAll('.parcela-checkbox');
+                    const parcelasPagas = Array.from(checkboxes).filter(cb => cb.checked).length;
+                    const percentualPago = (parcelasPagas / numParcelas) * 100;
+                    
+                    progressFill.style.width = `${percentualPago}%`;
+                    totalParcelasSpan.textContent = `${numParcelas} parcelas (${parcelasPagas} pagas)`;
+                } else {
+                    progressFill.style.width = '0%';
+                    totalParcelasSpan.textContent = `${numParcelas} parcelas`;
+                }
             }
             
             // Processar envio do formulário
@@ -539,17 +600,33 @@
                     // Criar array de parcelas
                     novaConta.parcelas = [];
                     const valorParcela = valor / numParcelas;
-                    const dataInicial = new Date(dataCompra);
+                    
+                    // Obter parcelas pagas se o status for "pago"
+                    const parcelasPagas = [];
+                    if (status === 'pago') {
+                        const checkboxes = document.querySelectorAll('.parcela-checkbox');
+                        checkboxes.forEach(checkbox => {
+                            if (checkbox.checked) {
+                                parcelasPagas.push(parseInt(checkbox.dataset.parcela));
+                            }
+                        });
+                    }
                     
                     for (let i = 0; i < numParcelas; i++) {
-                        const dataVencimento = new Date(dataInicial);
-                        dataVencimento.setMonth(dataInicial.getMonth() + i);
+                        const dataVencimento = new Date(dataCompra);
+                        dataVencimento.setMonth(dataVencimento.getMonth() + i);
+                        
+                        // Determinar status da parcela
+                        let statusParcela = 'pendente';
+                        if (status === 'pago' && parcelasPagas.includes(i+1)) {
+                            statusParcela = 'pago';
+                        }
                         
                         novaConta.parcelas.push({
                             numero: i + 1,
                             valor: valorParcela,
-                            dataVencimento: dataVencimento.toISOString().split('T')[0],
-                            status: status === 'pago' ? 'pago' : 'pendente'
+                            dataVencimento: dataVencimento.toISOString(),
+                            status: statusParcela
                         });
                     }
                 }

@@ -240,68 +240,92 @@ function formatarData(dataString) {
     return data.toLocaleDateString('pt-BR');
 }
 
-function renderizarTabela(contas, email) {
+// Função para renderizar a tabela de contas
+function renderizarTabela(contas) {
     const tbody = document.getElementById('accounts-body');
     tbody.innerHTML = '';
     
-    const hoje = new Date();
-    const seteDiasDepois = new Date();
-    seteDiasDepois.setDate(hoje.getDate() + 7);
+    if (contas.length === 0) {
+        // Exibir mensagem se não houver contas
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="6" class="text-center">Nenhuma conta encontrada</td>`;
+        tbody.appendChild(tr);
+        return;
+    }
     
     contas.forEach(conta => {
         const tr = document.createElement('tr');
         
-        // Verificar status para aplicar classe visual
-        const dataVencimento = new Date(conta.dataVencimento);
+        // Formatar a data de vencimento
+        let dataFormatada = formatarData(conta);
         
-        if (conta.status !== 'pago') {
-            if (dataVencimento < hoje) {
-                tr.classList.add('conta-vencida');
-            } else if (dataVencimento <= seteDiasDepois) {
-                tr.classList.add('conta-proxima');
-            } else {
-                tr.classList.add('conta-normal');
-            }
-        }
+        // Determinar o status da conta
+        let statusClass = conta.status === 'pago' ? 'pago' : 'pendente';
+        let statusText = conta.status === 'pago' ? 'Pago' : 'Pendente';
         
-        // Formatar data
-        const dataFormatada = dataVencimento.toLocaleDateString('pt-BR');
-        
-        // Determinar classe de status
-        let statusClass = 'pendente';
-        if (conta.status === 'pago') {
-            statusClass = 'pago';
-        } else if (dataVencimento < hoje) {
-            statusClass = 'vencido';
-        }
-        
-        // Determinar texto de status
-        let statusText = 'Pendente';
-        if (conta.status === 'pago') {
-            statusText = 'Pago';
-        } else if (dataVencimento < hoje) {
-            statusText = 'Vencido';
-        }
-        
+        // Criar HTML da linha
         tr.innerHTML = `
             <td>${conta.nome}</td>
-            <td>${conta.tipoPagamento === 'parcelado' ? 'Parcelado' : 'À Vista'}</td>
-            <td>R$ ${conta.valor.toFixed(2).replace('.', ',')}</td>
+            <td>${conta.tipoPagamento === 'parcelado' ? '<i class="fas fa-credit-card"></i> Parcelada' : 
+                 (conta.tipoPagamento === 'fixa' ? '<i class="fas fa-calendar-check"></i> Fixa' : 
+                 '<i class="fas fa-money-bill"></i> À Vista')}</td>
+            <td>R$ ${conta.valor.toFixed(2)}</td>
             <td>${dataFormatada}</td>
-            <td><span class="status-tag ${statusClass}">${statusText}</span></td>
             <td>
-                <button class="btn-icon btn-success" onclick="marcarComoPaga('${conta.id}')" ${conta.status === 'pago' ? 'disabled' : ''}>
-                    <i class="fas fa-check"></i>
+                <span class="status-tag ${statusClass}">${statusText}</span>
+            </td>
+            <td class="acoes">
+                ${conta.status === 'pago' ? '' : 
+                `<button class="btn btn-sm btn-success" onclick="marcarComoPaga('${conta.id}')">
+                    <i class="fas fa-check"></i> Pagar
+                </button>`}
+                <button class="btn btn-sm btn-primary" onclick="editarConta('${conta.id}')">
+                    <i class="fas fa-edit"></i> Editar
                 </button>
-                <button class="btn-icon btn-primary" onclick="editarConta('${conta.id}')">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-icon btn-danger" onclick="excluirConta('${conta.id}')">
-                    <i class="fas fa-trash"></i>
+                <button class="btn btn-sm btn-danger" onclick="excluirConta('${conta.id}')">
+                    <i class="fas fa-trash"></i> Excluir
                 </button>
             </td>
         `;
         
         tbody.appendChild(tr);
     });
+}
+
+// Função para formatar a data corretamente
+function formatarData(conta) {
+    try {
+        // Tentar obter a data de diferentes fontes
+        let data;
+        
+        if (conta.dataVencimento) {
+            data = new Date(conta.dataVencimento);
+        } else if (conta.parcelas && conta.parcelas.length > 0) {
+            data = new Date(conta.parcelas[0].dataVencimento);
+        } else if (conta.dataCompra) {
+            data = new Date(conta.dataCompra);
+        }
+        
+        // Verificar se a data é válida
+        if (data && !isNaN(data.getTime())) {
+            return data.toLocaleDateString('pt-BR');
+        }
+        
+        // Se chegou aqui, tentar extrair a data de uma string ISO
+        if (typeof conta.dataCompra === 'string') {
+            // Remover a parte de tempo se existir
+            const dataLimpa = conta.dataCompra.split('T')[0];
+            const partes = dataLimpa.split('-');
+            
+            if (partes.length === 3) {
+                // Formato ISO YYYY-MM-DD
+                return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            }
+        }
+        
+        return "Data não disponível";
+    } catch (e) {
+        console.error("Erro ao formatar data:", e);
+        return "Data não disponível";
+    }
 }
