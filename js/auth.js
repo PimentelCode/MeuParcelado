@@ -173,9 +173,14 @@ document.addEventListener('DOMContentLoaded', function () {
             senha: passwordInput.value
         };
 
-        const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+        // Usar a biblioteca storage para consistência
+        const usuarios = storage.getItem('usuarios') || [];
         usuarios.push(novoUsuario);
-        localStorage.setItem('usuarios', JSON.stringify(usuarios));
+        storage.setItem('usuarios', usuarios);
+        
+        // Para debug
+        console.log('Novo usuário cadastrado:', novoUsuario);
+        console.log('Lista atualizada de usuários:', usuarios);
 
         cadastroMessage.textContent = "Cadastro realizado com sucesso! Redirecionando para o login...";
         cadastroMessage.className = "alert alert-success";
