@@ -1,205 +1,189 @@
-// Funções para autenticação de usuários
+document.addEventListener('DOMContentLoaded', function () {
+    // Elementos do DOM
+    const cadastroForm = document.getElementById('cadastro-form');
+    const nomeInput = document.getElementById('nome');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm-password');
+    const cadastroButton = document.getElementById('cadastro-button');
+    const cadastroMessage = document.getElementById('cadastro-message');
 
-// Verifica se o usuário está logado
-function verificarAutenticacao() {
-    const usuarioAtual = storage.getItem('usuarioAtual');
-    
-    // Se não estiver na página de login ou cadastro e não estiver autenticado, redireciona para login
-    const paginasPublicas = ['index.html', 'cadastro.html'];
-    const paginaAtual = window.location.pathname.split('/').pop();
-    
-    if (!paginasPublicas.includes(paginaAtual) && !usuarioAtual) {
-        window.location.href = 'index.html';
-        return false;
-    }
-    
-    // Se estiver na página de login ou cadastro e já estiver autenticado, redireciona para dashboard
-    if (paginasPublicas.includes(paginaAtual) && usuarioAtual) {
-        window.location.href = 'dashboard.html';
+    const nomeValidation = document.getElementById('nome-validation');
+    const emailValidation = document.getElementById('email-validation');
+    const passwordValidation = document.getElementById('password-validation');
+    const confirmPasswordValidation = document.getElementById('confirm-password-validation');
+
+    const strengthIndicator = document.getElementById('strength-indicator');
+    const strengthText = document.getElementById('strength-text');
+
+    const lengthCheck = document.getElementById('length-check');
+    const uppercaseCheck = document.getElementById('uppercase-check');
+    const numberCheck = document.getElementById('number-check');
+    const specialCheck = document.getElementById('special-check');
+
+    const togglePassword = document.getElementById('toggle-password');
+    const toggleConfirmPassword = document.getElementById('toggle-confirm-password');
+
+    // Validadores
+    function validateNome() {
+        const nome = nomeInput.value.trim();
+        if (!nome) {
+            nomeValidation.textContent = "Preencha seu nome completo";
+            return false;
+        } else if (nome.length < 3) {
+            nomeValidation.textContent = "Nome muito curto";
+            return false;
+        } else if (!nome.includes(' ')) {
+            nomeValidation.textContent = "Informe nome e sobrenome";
+            return false;
+        }
+        nomeValidation.textContent = "";
         return true;
     }
-    
-    return !!usuarioAtual;
-}
 
-// Inicializa a página com base na autenticação
-function inicializarPagina() {
-    verificarAutenticacao();
-    
-    // Configura o botão de logout em todas as páginas que o possuem
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', fazerLogout);
-    }
-    
-    // Configura o formulário de login
-    const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        loginForm.addEventListener('submit', fazerLogin);
-    }
-    
-    // Configura o formulário de cadastro
-    const cadastroForm = document.getElementById('cadastro-form');
-    if (cadastroForm) {
-        cadastroForm.addEventListener('submit', cadastrarUsuario);
-    }
-    
-    // Exibe o nome do usuário nas páginas que o mostram
-    const usuarioAtual = storage.getItem('usuarioAtual');
-    const userNameElement = document.getElementById('user-name');
-    if (userNameElement && usuarioAtual) {
-        userNameElement.textContent = usuarioAtual.nome;
-    }
-}
+    function validateEmail() {
+        const email = emailInput.value.trim();
+        const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+        const emailExists = usuarios.some(u => u.email === email);
 
-// Função para fazer login
-function fazerLogin(event) {
-    event.preventDefault();
-    
-    const email = document.getElementById('email').value;
-    const senha = document.getElementById('password').value;
-    
-    const usuarios = storage.getItem('usuarios') || [];
-    const usuario = usuarios.find(u => u.email === email && u.senha === senha);
-    
-    if (usuario) {
-        // Armazena o usuário atual sem a senha
-        const usuarioLogado = {
-            id: usuario.id,
-            nome: usuario.nome,
-            email: usuario.email
+        if (!email) {
+            emailValidation.textContent = "Preencha seu e-mail";
+            return false;
+        } else if (!emailInput.validity.valid) {
+            emailValidation.textContent = "E-mail inválido";
+            return false;
+        } else if (emailExists) {
+            emailValidation.textContent = "Este e-mail já está cadastrado";
+            return false;
+        }
+
+        emailValidation.textContent = "";
+        return true;
+    }
+
+    function checkPasswordStrength(password) {
+        let strength = 0;
+
+        const hasLength = password.length >= 8;
+        const hasUppercase = /[A-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+        // UI
+        updateRequirement(lengthCheck, hasLength);
+        updateRequirement(uppercaseCheck, hasUppercase);
+        updateRequirement(numberCheck, hasNumber);
+        updateRequirement(specialCheck, hasSpecial);
+
+        strength += hasLength ? 25 : 0;
+        strength += hasUppercase ? 25 : 0;
+        strength += hasNumber ? 25 : 0;
+        strength += hasSpecial ? 25 : 0;
+
+        strengthIndicator.style.width = `${strength}%`;
+
+        let status = "Senha muito fraca";
+        let color = 'var(--danger)';
+        if (strength >= 75) {
+            status = "Senha forte";
+            color = 'var(--success)';
+        } else if (strength >= 50) {
+            status = "Senha média";
+            color = 'var(--warning)';
+        }
+
+        strengthIndicator.style.backgroundColor = color;
+        strengthText.textContent = status;
+        strengthText.style.color = color;
+
+        return strength >= 75;
+    }
+
+    function updateRequirement(element, isValid) {
+        const icon = element.querySelector('i');
+        icon.className = isValid ? 'fas fa-check-circle' : 'fas fa-times-circle';
+        icon.style.color = isValid ? 'var(--success)' : 'var(--danger)';
+    }
+
+    function validatePassword() {
+        const password = passwordInput.value;
+        if (!password) {
+            passwordValidation.textContent = "Preencha sua senha";
+            return false;
+        }
+
+        const isStrong = checkPasswordStrength(password);
+        if (!isStrong) {
+            passwordValidation.textContent = "Senha não atende aos requisitos mínimos";
+            return false;
+        }
+
+        passwordValidation.textContent = "";
+        return true;
+    }
+
+    function validateConfirmPassword() {
+        const confirmPassword = confirmPasswordInput.value;
+        if (!confirmPassword) {
+            confirmPasswordValidation.textContent = "Confirme sua senha";
+            return false;
+        } else if (confirmPassword !== passwordInput.value) {
+            confirmPasswordValidation.textContent = "As senhas não coincidem";
+            return false;
+        }
+
+        confirmPasswordValidation.textContent = "";
+        return true;
+    }
+
+    function checkFormValidity() {
+        const valid = validateNome() && validateEmail() && validatePassword() && validateConfirmPassword();
+        cadastroButton.disabled = !valid;
+    }
+
+    // Eventos
+    nomeInput.addEventListener('input', () => { validateNome(); checkFormValidity(); });
+    emailInput.addEventListener('input', () => { validateEmail(); checkFormValidity(); });
+    passwordInput.addEventListener('input', () => { validatePassword(); validateConfirmPassword(); checkFormValidity(); });
+    confirmPasswordInput.addEventListener('input', () => { validateConfirmPassword(); checkFormValidity(); });
+
+    togglePassword.addEventListener('click', () => {
+        toggleVisibility(passwordInput, togglePassword);
+    });
+
+    toggleConfirmPassword.addEventListener('click', () => {
+        toggleVisibility(confirmPasswordInput, toggleConfirmPassword);
+    });
+
+    function toggleVisibility(input, button) {
+        const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+        input.setAttribute('type', type);
+        button.classList.toggle('fa-eye');
+        button.classList.toggle('fa-eye-slash');
+    }
+
+    // Cadastro
+    cadastroForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!validateNome() || !validateEmail() || !validatePassword() || !validateConfirmPassword()) return;
+
+        const novoUsuario = {
+            nome: nomeInput.value.trim(),
+            email: emailInput.value.trim(),
+            senha: passwordInput.value
         };
-        
-        storage.setItem('usuarioAtual', usuarioLogado);
-        window.location.href = 'dashboard.html';
-    } else {
-        alert('E-mail ou senha incorretos!');
-    }
-}
 
-// Função para cadastrar novo usuário
-function cadastrarUsuario(event) {
-    event.preventDefault();
-    
-    const nome = document.getElementById('nome').value;
-    const email = document.getElementById('email').value;
-    const senha = document.getElementById('password').value;
-    const confirmarSenha = document.getElementById('confirm-password').value;
-    
-    // Validações básicas
-    if (senha !== confirmarSenha) {
-        alert('As senhas não coincidem!');
-        return;
-    }
-    
-    const usuarios = storage.getItem('usuarios') || [];
-    
-    // Verifica se o e-mail já está cadastrado
-    if (usuarios.some(u => u.email === email)) {
-        alert('Este e-mail já está cadastrado!');
-        return;
-    }
-    
-    // Cria novo usuário
-    const novoUsuario = {
-        id: Date.now().toString(),
-        nome,
-        email,
-        senha,
-        dataCadastro: new Date().toISOString()
-    };
-    
-    // Adiciona à lista de usuários
-    usuarios.push(novoUsuario);
-    storage.setItem('usuarios', usuarios);
-    
-    // Faz login automático
-    const usuarioLogado = {
-        id: novoUsuario.id,
-        nome: novoUsuario.nome,
-        email: novoUsuario.email
-    };
-    
-    storage.setItem('usuarioAtual', usuarioLogado);
-    
-    alert('Cadastro realizado com sucesso!');
-    window.location.href = 'dashboard.html';
-}
+        const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+        usuarios.push(novoUsuario);
+        localStorage.setItem('usuarios', JSON.stringify(usuarios));
 
-// Função para fazer logout
-function fazerLogout(event) {
-    if (event) event.preventDefault();
-    
-    storage.removeItem('usuarioAtual');
-    window.location.href = 'index.html';
-}
+        cadastroMessage.textContent = "Cadastro realizado com sucesso! Redirecionando para o login...";
+        cadastroMessage.className = "alert alert-success";
+        cadastroMessage.style.display = "block";
 
-// Inicializa a página quando o DOM estiver carregado
-document.addEventListener('DOMContentLoaded', inicializarPagina);
+        cadastroForm.reset();
+        cadastroButton.disabled = true;
 
-
-// Função para login
-function realizarLogin(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('login-email').value;
-    const senha = document.getElementById('login-senha').value;
-    
-    // Validar campos
-    if (!email || !senha) {
-        alert("Erro: Preencha todos os campos!");
-        return;
-    }
-    
-    // Buscar usuário
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const usuario = usuarios.find(u => u.email === email && u.senha === senha);
-    
-    if (usuario) {
-        // Salvar usuário logado
-        storage.setItem('usuarioAtual', usuario);
-        alert("Login realizado com sucesso!");
-        window.location.href = 'dashboard.html';
-    } else {
-        alert("Erro: Email ou senha incorretos!");
-    }
-}
-
-// Função para cadastro
-function realizarCadastro(e) {
-    e.preventDefault();
-    
-    const nome = document.getElementById('cadastro-nome').value;
-    const email = document.getElementById('cadastro-email').value;
-    const senha = document.getElementById('cadastro-senha').value;
-    const confirmarSenha = document.getElementById('cadastro-confirmar-senha').value;
-    
-    // Validar campos
-    if (!nome || !email || !senha || !confirmarSenha) {
-        alert("Erro: Preencha todos os campos!");
-        return;
-    }
-    
-    if (senha !== confirmarSenha) {
-        alert("Erro: As senhas não coincidem!");
-        return;
-    }
-    
-    // Verificar se email já existe
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    if (usuarios.some(u => u.email === email)) {
-        alert("Erro: Este email já está cadastrado!");
-        return;
-    }
-    
-    // Adicionar novo usuário
-    const novoUsuario = { nome, email, senha };
-    usuarios.push(novoUsuario);
-    localStorage.setItem('usuarios', JSON.stringify(usuarios));
-    
-    alert("Cadastro realizado com sucesso! Faça login para continuar.");
-    
-    // Limpar campos e voltar para login
-    document.getElementById('cadastro-form').reset();
-    document.getElementById('login-tab').click();
-}
+        setTimeout(() => window.location.href = "index.html", 3000);
+    });
+});
