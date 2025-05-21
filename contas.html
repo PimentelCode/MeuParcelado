@@ -219,6 +219,7 @@
       .page-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: 1rem;
       }
 
       .search-container {
@@ -226,11 +227,52 @@
       }
 
       table {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+      }
+
+      th, td {
+        padding: 0.5rem;
+        font-size: 0.8rem;
       }
 
       .acoes {
-        white-space: nowrap;
+        white-space: normal;
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+
+      .btn-small {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.75rem;
+        width: 100%;
+      }
+
+      .filter-section {
+        flex-direction: column;
+      }
+
+      .filter-container {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      nav.main-nav ul {
+        gap: 0.8rem;
+        font-size: 0.9rem;
+      }
+
+      .page-header h2 {
+        font-size: 1.4rem;
+      }
+
+      .total-mes-atual {
+        font-size: 0.9rem;
+      }
+
+      .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
       }
     }
   </style>
