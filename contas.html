@@ -1,555 +1,334 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MeuParcelado - Minhas Contas</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/contas.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MeuParcelado - Minhas Contas</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #00b894;
+      --primary-light: #1dd1a1;
+      --primary-dark: #00a383;
+      --danger: #e74c3c;
+      --success: #2ecc71;
+      --background-glass: rgba(255, 255, 255, 0.05);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(120deg, #1a1a1a, #2c3e50);
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    header.main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: var(--background-glass);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .logo-container img {
+      max-height: 40px;
+    }
+
+    nav.main-nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1.5rem;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav.main-nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    nav.main-nav a.active {
+      color: var(--primary);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .page-header h2 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    .total-mes-atual {
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      color: #ccc;
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #00a383;
+    }
+
+    .filter-section {
+      background: var(--background-glass);
+      padding: 1rem;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: space-between;
+    }
+
+    .filter-container {
+      flex: 1 1 200px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.6rem;
+      border: none;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 0.95rem;
+    }
+
+    .search-container {
+      display: flex;
+      flex: 1 1 100%;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .accounts-list {
+      background: var(--background-glass);
+      padding: 1rem;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      min-width: 700px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    th {
+      color: #ffffff;
+      font-weight: bold;
+      background-color: rgba(0, 184, 148, 0.3);
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .status-tag {
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .status-tag.pago {
+      background-color: rgba(46, 204, 113, 0.2);
+      color: var(--success);
+    }
+
+    .status-tag.pendente {
+      background-color: rgba(231, 76, 60, 0.2);
+      color: var(--danger);
+    }
+
+    .btn-small {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
+      border-radius: 6px;
+    }
+
+    .btn-success { background-color: #2ecc71; color: white; }
+    .btn-secondary { background-color: #555; color: white; }
+    .btn-danger { background-color: #e74c3c; color: white; }
+
+    .acoes button, .acoes a {
+      margin-right: 5px;
+      margin-bottom: 5px;
+      display: inline-block;
+    }
+
+    .mensagem-vazia {
+      text-align: center;
+      color: #ccc;
+      margin: 2rem auto;
+    }
+
+    .mensagem-vazia i {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    footer.main-footer {
+      text-align: center;
+      padding: 2rem 1rem 1rem;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .search-container {
+        flex-direction: column;
+      }
+
+      table {
+        font-size: 0.9rem;
+      }
+
+      .acoes {
+        white-space: nowrap;
+      }
+    }
+  </style>
 </head>
 <body>
-    <header class="main-header">
-        <div class="logo-container">
-            <img src="img/logo.png" alt="MeuParcelado Logo" class="logo-small">
+  <header class="main-header">
+    <div class="logo-container">
+      <img src="img/logo.png" alt="MeuParcelado Logo" class="logo-small" />
+    </div>
+    <nav class="main-nav">
+      <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="contas.html" class="active">Minhas Contas</a></li>
+        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="page-header">
+      <div>
+        <h2>Minhas Contas</h2>
+        <div class="total-mes-atual">
+          <i class="fas fa-calendar-alt"></i>
+          Total a pagar no mês atual: <span id="valor-mes-atual">R$ 0,00</span>
         </div>
-        <nav class="main-nav">
-            <ul>
-                <li><a href="dashboard.html">Dashboard</a></li>
-                <li><a href="contas.html" class="active">Minhas Contas</a></li>
-                <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
-            </ul>
-        </nav>
-    </header>
-    
-    <main class="container">
-        <section class="page-header">
-            <div>
-                <h2>Minhas Contas</h2>
-                <div class="total-mes-atual" id="total-mes-atual">
-                    <i class="fas fa-calendar-alt"></i> Total a pagar no mês atual: <span id="valor-mes-atual">R$ 0,00</span>
-                </div>
-            </div>
-            <a href="nova-conta.html" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar nova conta</a>
-        </section>
-        
-        <section class="filter-section">
-            <div class="filter-container">
-                <label for="filter"><i class="fas fa-filter"></i> Filtrar por:</label>
-                <select id="filter" class="form-control">
-                    <option value="todas" selected>Todas as contas</option>
-                    <option value="mes-atual">Mês atual</option>
-                    <option value="pendentes">Contas pendentes</option>
-                    <option value="pagas">Contas pagas</option>
-                </select>
-            </div>
-            <div class="filter-container">
-                <label for="month-filter"><i class="fas fa-calendar-alt"></i> Mês:</label>
-                <select id="month-filter" class="form-control">
-                    <option value="todos">Todos os meses</option>
-                    <option value="0">Janeiro</option>
-                    <option value="1">Fevereiro</option>
-                    <option value="2">Março</option>
-                    <option value="3">Abril</option>
-                    <option value="4">Maio</option>
-                    <option value="5">Junho</option>
-                    <option value="6">Julho</option>
-                    <option value="7">Agosto</option>
-                    <option value="8">Setembro</option>
-                    <option value="9">Outubro</option>
-                    <option value="10">Novembro</option>
-                    <option value="11">Dezembro</option>
-                </select>
-            </div>
-            <div class="search-container">
-                <input type="text" id="search" class="form-control" placeholder="Buscar conta por nome ou valor...">
-                <button id="search-btn" class="btn btn-secondary"><i class="fas fa-search"></i></button>
-            </div>
-        </section>
-        
-        <section class="accounts-list">
-            <div class="table-container">
-                <table id="accounts-table">
-                    <thead>
-                        <tr>
-                            <th>Nome da conta</th>
-                            <th>Tipo</th>
-                            <th>Valor</th>
-                            <th>Data de vencimento</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="accounts-body">
-                        <!-- Dados serão inseridos via JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-            <div id="sem-contas" class="mensagem-vazia" style="display: none;">
-                <i class="fas fa-info-circle"></i>
-                <p>Você ainda não tem contas cadastradas. Que tal adicionar uma agora?</p>
-                <a href="nova-conta.html" class="btn btn-primary mt-1">Adicionar Conta</a>
-            </div>
-        </section>
-    </main>
-    
-    <footer class="main-footer">
-        <p>&copy; 2023 MeuParcelado - Controle suas contas parceladas</p>
-    </footer>
-    
-    <script src="js/storage.js"></script>
-    <script src="js/notifications.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Verificar autenticação
-            const usuarioAtual = JSON.parse(localStorage.getItem('usuarioAtual'));
-            if (!usuarioAtual) {
-                window.location.href = 'index.html';
-                return;
-            }
-            
-            // Configurar evento de logout
-            document.getElementById('logout-btn').addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                if (confirm('Tem certeza que deseja sair?')) {
-                    localStorage.removeItem('usuarioAtual');
-                    window.location.href = 'index.html';
-                }
-            });
-            
-            // Carregar contas
-            carregarContas(usuarioAtual.email);
-            
-            // Configurar eventos de filtro e busca
-            document.getElementById('filter').addEventListener('change', function() {
-                carregarContas(usuarioAtual.email);
-            });
-            
-            // Adicionar evento para o filtro de mês
-            document.getElementById('month-filter').addEventListener('change', function() {
-                carregarContas(usuarioAtual.email);
-            });
-            
-            document.getElementById('search-btn').addEventListener('click', function() {
-                carregarContas(usuarioAtual.email);
-            });
-            
-            document.getElementById('search').addEventListener('keyup', function(e) {
-                if (e.key === 'Enter') {
-                    carregarContas(usuarioAtual.email);
-                }
-            });
-        });
-        
-        function carregarContas(email) {
-            // Buscar contas do usuário
-            const chaveDados = `contas_${email}`;
-            let contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
-            
-            // Verificar se há contas
-            if (contas.length === 0) {
-                document.getElementById('accounts-table').style.display = 'none';
-                document.getElementById('sem-contas').style.display = 'block';
-                document.getElementById('valor-mes-atual').textContent = formatarMoeda(0);
-                return;
-            }
-            
-            document.getElementById('accounts-table').style.display = 'table';
-            document.getElementById('sem-contas').style.display = 'none';
-            
-            // Aplicar filtro
-            const filtro = document.getElementById('filter').value;
-            const mesFiltro = document.getElementById('month-filter').value;
-            const busca = document.getElementById('search').value.toLowerCase();
-            
-            const dataAtual = new Date();
-            const mesAtual = dataAtual.getMonth();
-            const anoAtual = dataAtual.getFullYear();
-            
-            let contasFiltradas = contas;
-            
-            // Filtrar por tipo
-            if (filtro === 'mes-atual') {
-                contasFiltradas = contas.filter(conta => {
-                    const dataVencimento = new Date(conta.dataVencimento);
-                    return dataVencimento.getMonth() === mesAtual && dataVencimento.getFullYear() === anoAtual;
-                });
-            } else if (filtro === 'pendentes') {
-                contasFiltradas = contas.filter(conta => conta.status !== 'pago');
-            } else if (filtro === 'pagas') {
-                contasFiltradas = contas.filter(conta => conta.status === 'pago');
-            }
-            
-            // Filtrar por mês específico
-            if (mesFiltro !== 'todos') {
-                const mesSelecionado = parseInt(mesFiltro);
-                contasFiltradas = contasFiltradas.filter(conta => {
-                    const dataVencimento = new Date(conta.dataVencimento);
-                    return dataVencimento.getMonth() === mesSelecionado;
-                });
-            }
-            
-            // Filtrar por busca
-            if (busca) {
-                contasFiltradas = contasFiltradas.filter(conta => {
-                    return conta.nome.toLowerCase().includes(busca) || 
-                           conta.valor.toString().includes(busca);
-                });
-            }
-            
-            // Calcular total do mês atual
-            const totalMesAtual = contas
-                .filter(conta => {
-                    const dataVencimento = new Date(conta.dataVencimento);
-                    return dataVencimento.getMonth() === mesAtual && 
-                           dataVencimento.getFullYear() === anoAtual && 
-                           conta.status !== 'pago';
-                })
-                .reduce((total, conta) => total + conta.valor, 0);
-            
-            document.getElementById('valor-mes-atual').textContent = formatarMoeda(totalMesAtual);
-            
-            // Renderizar tabela
-            renderizarTabela(contasFiltradas, email);
-        }
-        
-        function renderizarTabela(contas, email) {
-            const tbody = document.getElementById('accounts-body');
-            tbody.innerHTML = '';
-            
-            const dataAtual = new Date();
-            
-            contas.forEach(conta => {
-                const tr = document.createElement('tr');
-                
-                // Obter e formatar a data de vencimento corretamente
-                let dataVencimento;
-                let dataFormatada;
-                
-                try {
-                    // Tentar obter a data de diferentes fontes
-                    if (conta.dataVencimento) {
-                        dataVencimento = new Date(conta.dataVencimento);
-                    } else if (conta.parcelas && conta.parcelas.length > 0) {
-                        dataVencimento = new Date(conta.parcelas[0].dataVencimento);
-                    } else if (conta.dataCompra) {
-                        dataVencimento = new Date(conta.dataCompra);
-                    } else {
-                        // Se não houver nenhuma data, usar a data atual
-                        dataVencimento = new Date();
-                    }
-                    
-                    // Verificar se a data é válida
-                    if (!isNaN(dataVencimento.getTime())) {
-                        dataFormatada = dataVencimento.toLocaleDateString('pt-BR');
-                    } else {
-                        dataFormatada = 'Data não disponível';
-                    }
-                } catch (e) {
-                    console.error('Erro ao processar data:', e);
-                    dataFormatada = 'Data não disponível';
-                    dataVencimento = new Date(); // Data padrão para evitar erros
-                }
-                
-                // Verificar se está vencida ou próxima
-                const diasAteVencimento = Math.floor((dataVencimento - dataAtual) / (1000 * 60 * 60 * 24));
-                
-                if (diasAteVencimento < 0 && conta.status !== 'pago') {
-                    tr.classList.add('conta-vencida');
-                } else if (diasAteVencimento <= 5 && conta.status !== 'pago') {
-                    tr.classList.add('conta-proxima');
-                }
-                
-                // Determinar ícone do tipo
-                let tipoIcone = '';
-                if (conta.tipoPagamento === 'parcelado') {
-                    tipoIcone = '🧾 Parcelada';
-                } else if (conta.tipoPagamento === 'fixa') {
-                    tipoIcone = '🔁 Fixa';
-                } else {
-                    tipoIcone = '💸 À Vista';
-                }
-                
-                // Criar células
-                tr.innerHTML = `
-                    <td>${conta.nome}</td>
-                    <td>${tipoIcone}</td>
-                    <td>${formatarMoeda(conta.valor)}</td>
-                    <td>${dataFormatada}</td>
-                    <td>
-                        <span class="status-tag ${conta.status === 'pago' ? 'pago' : 'pendente'}">
-                            ${conta.status === 'pago' ? 'Pago' : 'Pendente'}
-                        </span>
-                    </td>
-                    <td class="acoes">
-                        ${conta.status !== 'pago' ? 
-                            `<button class="btn btn-small btn-success pagar-btn" data-id="${conta.id}">
-                                <i class="fas fa-check"></i> Pagar
-                            </button>` : ''}
-                        <a href="nova-conta.html?id=${conta.id}" class="btn btn-small btn-secondary">
-                            <i class="fas fa-edit"></i> Editar
-                        </a>
-                        <button class="btn btn-small btn-danger excluir-btn" data-id="${conta.id}">
-                            <i class="fas fa-trash"></i> Excluir
-                        </button>
-                    </td>
-                `;
-                
-                tbody.appendChild(tr);
-            });
-            
-            // Adicionar eventos aos botões
-            document.querySelectorAll('.pagar-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const contaId = this.getAttribute('data-id');
-                    marcarComoPaga(contaId, email);
-                });
-            });
-            
-            document.querySelectorAll('.excluir-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const contaId = this.getAttribute('data-id');
-                    excluirConta(contaId, email);
-                });
-            });
-        }
-        
-        function marcarComoPaga(contaId, email) {
-            // Buscar contas do usuário
-            const chaveDados = `contas_${email}`;
-            let contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
-            
-            // Encontrar a conta pelo ID
-            const contaIndex = contas.findIndex(c => c.id === contaId);
-            if (contaIndex === -1) {
-                alert('Erro: Conta não encontrada!');
-                return;
-            }
-            
-            const conta = contas[contaIndex];
-            
-            // Verificar se é uma conta parcelada
-            if (conta.tipoPagamento === 'parcelado' && conta.parcelas && conta.parcelas.length > 0) {
-                // Criar modal para seleção de parcelas
-                const modal = document.createElement('div');
-                modal.className = 'modal';
-                modal.innerHTML = `
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h3>Selecionar Parcelas para Pagamento</h3>
-                            <button class="close-modal">&times;</button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Selecione as parcelas que deseja marcar como pagas:</p>
-                            <div class="parcelas-list">
-                                ${conta.parcelas.map((parcela, index) => `
-                                    <div class="parcela-item ${parcela.status === 'pago' ? 'parcela-paga' : ''}">
-                                        <label class="parcela-checkbox">
-                                            <input type="checkbox" 
-                                                   data-parcela="${index}" 
-                                                   ${parcela.status === 'pago' ? 'checked disabled' : ''}>
-                                            Parcela ${parcela.numero}/${conta.parcelas.length} - 
-                                            ${new Date(parcela.dataVencimento).toLocaleDateString('pt-BR')} - 
-                                            ${formatarMoeda(parcela.valor)}
-                                        </label>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-secondary cancelar-pagamento">Cancelar</button>
-                            <button class="btn btn-success confirmar-pagamento">Confirmar Pagamento</button>
-                        </div>
-                    </div>
-                `;
-                
-                document.body.appendChild(modal);
-                
-                // Adicionar eventos aos botões do modal
-                modal.querySelector('.close-modal').addEventListener('click', () => {
-                    document.body.removeChild(modal);
-                });
-                
-                modal.querySelector('.cancelar-pagamento').addEventListener('click', () => {
-                    document.body.removeChild(modal);
-                });
-                
-                modal.querySelector('.confirmar-pagamento').addEventListener('click', () => {
-                    // Obter parcelas selecionadas
-                    const checkboxes = modal.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
-                    const parcelasSelecionadas = Array.from(checkboxes).map(cb => parseInt(cb.getAttribute('data-parcela')));
-                    
-                    if (parcelasSelecionadas.length === 0) {
-                        alert('Selecione pelo menos uma parcela para pagar.');
-                        return;
-                    }
-                    
-                    // Marcar parcelas selecionadas como pagas
-                    parcelasSelecionadas.forEach(index => {
-                        conta.parcelas[index].status = 'pago';
-                        conta.parcelas[index].dataPagamento = new Date().toISOString();
-                    });
-                    
-                    // Verificar se todas as parcelas foram pagas
-                    const todasPagas = conta.parcelas.every(p => p.status === 'pago');
-                    if (todasPagas) {
-                        conta.status = 'pago';
-                        conta.dataPagamento = new Date().toISOString();
-                    }
-                    
-                    // Salvar alterações no localStorage
-                    contas[contaIndex] = conta;
-                    localStorage.setItem(chaveDados, JSON.stringify(contas));
-                    
-                    // Fechar modal e recarregar a tabela
-                    document.body.removeChild(modal);
-                    carregarContas(email);
-                    
-                    notifications.success(`${parcelasSelecionadas.length} parcela(s) marcada(s) como paga(s) com sucesso!`);
-                });
-            } else {
-                // Para contas não parceladas, manter o comportamento atual
-                contas[contaIndex].status = 'pago';
-                contas[contaIndex].dataPagamento = new Date().toISOString();
-                
-                // Salvar alterações no localStorage
-                localStorage.setItem(chaveDados, JSON.stringify(contas));
-                
-                // Recarregar a tabela
-                carregarContas(email);
-                
-                notifications.success('Conta marcada como paga com sucesso!');
-            }
-        }
-        
-        // Substituir alerts por notificações
-        function excluirConta(contaId) {
-            // Buscar contas do usuário
-            const chaveDados = `contas_${usuarioAtual.email}`;
-            let contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
-            
-            // Encontrar a conta pelo ID
-            const contaIndex = contas.findIndex(c => c.id === contaId);
-            if (contaIndex === -1) {
-                notifications.error('Erro: Conta não encontrada!');
-                return;
-            }
-            
-            // Remover a conta
-            contas.splice(contaIndex, 1);
-            
-            // Salvar alterações no localStorage
-            localStorage.setItem(chaveDados, JSON.stringify(contas));
-            
-            // Recarregar a tabela
-            carregarContas(usuarioAtual.email);
-            
-            notifications.success('Conta excluída com sucesso!');
-        }
-        
-        function formatarMoeda(valor) {
-            return valor.toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-            });
-        }
-    </script>
-    
-    <style>
-        /* Estilos para o modal de seleção de parcelas */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        
-        .modal-content {
-            background-color: #2a2a2a;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-        }
-        
-        .modal-header {
-            padding: 1rem;
-            border-bottom: 1px solid #3a3a3a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .modal-header h3 {
-            margin: 0;
-            color: white;
-        }
-        
-        .close-modal {
-            background: none;
-            border: none;
-            color: #888;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        
-        .close-modal:hover {
-            color: white;
-        }
-        
-        .modal-body {
-            padding: 1rem;
-            max-height: 50vh;
-            overflow-y: auto;
-        }
-        
-        .modal-footer {
-            padding: 1rem;
-            border-top: 1px solid #3a3a3a;
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.5rem;
-        }
-        
-        .parcelas-list {
-            margin-top: 1rem;
-        }
-        
-        .parcela-item {
-            padding: 0.75rem;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            background-color: #3a3a3a;
-            transition: all 0.3s;
-        }
-        
-        .parcela-paga {
-            background-color: rgba(76, 217, 100, 0.2);
-        }
-        
-        .parcela-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            width: 100%;
-            color: white;
-        }
-        
-        .parcela-checkbox input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #820AD1;
-        }
-    </style>
+      </div>
+      <a href="nova-conta.html" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Adicionar nova conta
+      </a>
+    </section>
+
+    <section class="filter-section">
+      <div class="filter-container">
+        <label for="filter"><i class="fas fa-filter"></i> Filtrar por:</label>
+        <select id="filter" class="form-control">
+          <option value="todas">Todas as contas</option>
+          <option value="mes-atual">Mês atual</option>
+          <option value="pendentes">Contas pendentes</option>
+          <option value="pagas">Contas pagas</option>
+        </select>
+      </div>
+      <div class="filter-container">
+        <label for="month-filter"><i class="fas fa-calendar-alt"></i> Mês:</label>
+        <select id="month-filter" class="form-control">
+          <option value="todos">Todos</option>
+          <option value="0">Janeiro</option>
+          <option value="1">Fevereiro</option>
+          <option value="2">Março</option>
+          <option value="3">Abril</option>
+          <option value="4">Maio</option>
+          <option value="5">Junho</option>
+          <option value="6">Julho</option>
+          <option value="7">Agosto</option>
+          <option value="8">Setembro</option>
+          <option value="9">Outubro</option>
+          <option value="10">Novembro</option>
+          <option value="11">Dezembro</option>
+        </select>
+      </div>
+      <div class="search-container">
+        <input type="text" id="search" class="form-control" placeholder="Buscar conta por nome ou valor..." />
+        <button id="search-btn" class="btn btn-secondary"><i class="fas fa-search"></i></button>
+      </div>
+    </section>
+
+    <section class="accounts-list">
+      <div class="table-container">
+        <table id="accounts-table">
+          <thead>
+            <tr>
+              <th>Nome da conta</th>
+              <th>Tipo</th>
+              <th>Valor</th>
+              <th>Vencimento</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="accounts-body">
+            <!-- Contas via JS -->
+          </tbody>
+        </table>
+      </div>
+      <div id="sem-contas" class="mensagem-vazia" style="display: none;">
+        <i class="fas fa-info-circle"></i>
+        <p>Você ainda não tem contas cadastradas. Que tal adicionar uma agora?</p>
+        <a href="nova-conta.html" class="btn btn-primary">Adicionar Conta</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="main-footer">
+    &copy; 2025 MeuParcelado - Controle suas contas parceladas
+  </footer>
+
+  <script src="js/storage.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/contas.js"></script> <!-- Se quiser separar JS -->
 </body>
 </html>

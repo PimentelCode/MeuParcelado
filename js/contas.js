@@ -9,9 +9,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Carregar contas do usuário
     carregarContas();
+    
+    // Calcular e exibir o total do mês atual
+    atualizarTotalMesAtual();
 
     // Configurar eventos
     document.getElementById('filter').addEventListener('change', carregarContas);
+    document.getElementById('month-filter').addEventListener('change', function() {
+        carregarContas();
+        atualizarTotalMesAtual();
+    });
     document.getElementById('search-btn').addEventListener('click', buscarContas);
     document.getElementById('search').addEventListener('keyup', function(e) {
         if (e.key === 'Enter') {
@@ -32,17 +39,27 @@ function carregarContas() {
     // Buscar contas do usuário
     const contas = storage.getContas();
     const filtro = document.getElementById('filter').value;
+    const mesFiltro = document.getElementById('month-filter').value;
     const termoBusca = document.getElementById('search').value.toLowerCase();
     
     let contasFiltradas = contas;
     
-    // Aplicar filtro
+    // Aplicar filtro de status
     if (filtro === 'mes-atual') {
         contasFiltradas = filtrarContasMesAtual(contas);
     } else if (filtro === 'pendentes') {
         contasFiltradas = contas.filter(conta => !todasParcelasPagas(conta));
     } else if (filtro === 'pagas') {
         contasFiltradas = contas.filter(conta => todasParcelasPagas(conta));
+    }
+    
+    // Aplicar filtro de mês
+    if (mesFiltro !== 'todos') {
+        const mesNumero = parseInt(mesFiltro);
+        contasFiltradas = contasFiltradas.filter(conta => {
+            const dataVencimento = new Date(conta.dataVencimento || conta.dataCompra);
+            return dataVencimento.getMonth() === mesNumero;
+        });
     }
     
     // Aplicar busca
@@ -53,6 +70,9 @@ function carregarContas() {
     }
     
     exibirContas(contasFiltradas);
+    
+    // Atualizar o total do mês atual
+    atualizarTotalMesAtual();
 }
 
 // Função para filtrar contas do mês atual
@@ -188,6 +208,9 @@ function marcarComoPaga(contaId) {
     // Recarregar a tabela
     carregarContas();
     
+    // Atualizar o total do mês atual
+    atualizarTotalMesAtual();
+    
     alert("Conta marcada como paga com sucesso!");
 }
 
@@ -221,6 +244,9 @@ function excluirConta(contaId) {
     // Recarregar a tabela
     carregarContas();
     
+    // Atualizar o total do mês atual
+    atualizarTotalMesAtual();
+    
     alert("Conta excluída com sucesso!");
 }
 
@@ -229,6 +255,35 @@ function excluirConta(contaId) {
  */
 function formatarMoeda(valor) {
     return `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`;
+}
+
+/**
+ * Função para calcular e exibir o total a pagar no mês atual
+ */
+function atualizarTotalMesAtual() {
+    // Obter todas as contas
+    const contas = storage.getContas();
+    
+    // Filtrar contas do mês atual e pendentes
+    const dataAtual = new Date();
+    const mesAtual = dataAtual.getMonth();
+    const anoAtual = dataAtual.getFullYear();
+    
+    const contasMesAtual = contas.filter(conta => {
+        // Verificar se a conta está pendente
+        if (conta.status === 'pago') return false;
+        
+        // Verificar se a conta vence no mês atual
+        const dataVencimento = new Date(conta.dataVencimento || conta.dataCompra);
+        return dataVencimento.getMonth() === mesAtual && 
+               dataVencimento.getFullYear() === anoAtual;
+    });
+    
+    // Calcular o total
+    const total = contasMesAtual.reduce((soma, conta) => soma + parseFloat(conta.valor || 0), 0);
+    
+    // Exibir o total na interface
+    document.getElementById('valor-mes-atual').textContent = formatarMoeda(total);
 }
 
 /**
