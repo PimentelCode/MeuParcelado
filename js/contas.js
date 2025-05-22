@@ -166,37 +166,37 @@ function buscarContas() {
     carregarContas();
 }
 
-// Função para exibir as contas na tabela
+// Função para exibir as contas em cards responsivos
 function exibirContas(contas) {
-    // Obter referência ao corpo da tabela
-    const tbody = document.getElementById('accounts-body');
-    tbody.innerHTML = '';
-    
-    // Verificar se existem contas
+    const cardsContainer = document.getElementById('cards-container');
+    cardsContainer.innerHTML = '';
+
     if (contas.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="6" class="mensagem-vazia">Nenhuma conta cadastrada.</td>';
-        tbody.appendChild(tr);
+        document.getElementById('sem-contas').style.display = 'block';
         return;
+    } else {
+        document.getElementById('sem-contas').style.display = 'none';
     }
-    
-    // Exibir cada conta na tabela
+
     contas.forEach(conta => {
-        const tr = document.createElement('tr');
-        
         // Determinar o tipo da conta
         let tipoConta = '';
+        let tipoIcone = '';
         if (conta.tipoPagamento === 'parcelado') {
-            tipoConta = 'parcelada';
+            tipoConta = 'Parcelada';
+            tipoIcone = '<i class="fas fa-credit-card"></i>';
         } else if (conta.tipoPagamento === 'fixa') {
-            tipoConta = 'fixa';
+            tipoConta = 'Fixa';
+            tipoIcone = '<i class="fas fa-calendar-check"></i>';
         } else {
-            tipoConta = 'única';
+            tipoConta = 'Única';
+            tipoIcone = '<i class="fas fa-money-bill"></i>';
         }
-        
+
         // Determinar o status da conta
         let statusConta = conta.status || 'pendente';
-        
+        let statusTexto = statusConta === 'pago' ? 'Pago' : 'Pendente';
+
         // Determinar a data de vencimento
         let dataVencimento;
         if (conta.dataVencimento) {
@@ -206,30 +206,30 @@ function exibirContas(contas) {
         } else {
             dataVencimento = formatarData(conta.dataCompra);
         }
-        
-        // Criar a linha da tabela
-        tr.innerHTML = `
-            <td>${conta.nome}</td>
-            <td>${tipoConta}</td>
-            <td>${formatarMoeda(conta.valor)}</td>
-            <td>${dataVencimento}</td>
-            <td><span class="status-tag ${statusConta}">${statusConta}</span></td>
-            <td class="acoes">
-                <button class="btn btn-small ${statusConta === 'pago' ? 'btn-disabled' : 'btn-success'}" 
-                        onclick="marcarComoPaga('${conta.id}')" 
-                        ${statusConta === 'pago' ? 'disabled' : ''}>
-                    <i class="fas fa-check"></i> Pagar
-                </button>
-                <button class="btn btn-small btn-primary" onclick="editarConta('${conta.id}')">
-                    <i class="fas fa-edit"></i> Editar
-                </button>
-                <button class="btn btn-small btn-danger" onclick="excluirConta('${conta.id}')">
-                    <i class="fas fa-trash"></i> Excluir
-                </button>
-            </td>
+
+        // Criar o card
+        const card = document.createElement('div');
+        card.className = 'card-conta';
+        card.innerHTML = `
+            <div class="card-header">${tipoIcone} <span>${conta.nome}</span></div>
+            <div class="card-info">
+                <span><i class="fas fa-list"></i> ${tipoConta}</span>
+                <span><i class="fas fa-dollar-sign"></i> ${formatarMoeda(conta.valor)}</span>
+                <span><i class="fas fa-calendar-alt"></i> ${dataVencimento}</span>
+            </div>
+            <div class="card-status">
+                <span class="status-tag ${statusConta}">${statusTexto}</span>
+            </div>
+            <div class="card-actions">
+                ${statusConta === 'pago' ?
+                    `<span class="btn btn-small btn-pago"><i class="fas fa-check-circle"></i> Pago</span>` :
+                    `<button class="btn btn-small btn-success" onclick="marcarComoPaga('${conta.id}')"><i class="fas fa-check"></i> Pagar</button>`
+                }
+                <button class="btn btn-small btn-primary" onclick="editarConta('${conta.id}')"><i class="fas fa-edit"></i> Editar</button>
+                <button class="btn btn-small btn-danger" onclick="excluirConta('${conta.id}')"><i class="fas fa-trash"></i> Excluir</button>
+            </div>
         `;
-        
-        tbody.appendChild(tr);
+        cardsContainer.appendChild(card);
     });
 }
 
@@ -429,37 +429,56 @@ function renderizarTabela(contas) {
 // Função para formatar a data corretamente
 function formatarData(conta) {
     try {
-        // Tentar obter a data de diferentes fontes
-        let data;
+        // Se o parâmetro for uma string de data diretamente
+        if (typeof conta === 'string') {
+            return formatarDataString(conta);
+        }
+        
+        // Tentar obter a data de diferentes fontes do objeto conta
+        let dataString;
         
         if (conta.dataVencimento) {
-            data = new Date(conta.dataVencimento);
+            dataString = conta.dataVencimento;
         } else if (conta.parcelas && conta.parcelas.length > 0) {
-            data = new Date(conta.parcelas[0].dataVencimento);
+            dataString = conta.parcelas[0].dataVencimento;
         } else if (conta.dataCompra) {
-            data = new Date(conta.dataCompra);
+            dataString = conta.dataCompra;
+        } else {
+            // Se não encontrar nenhuma data, usar a data atual
+            return new Date().toLocaleDateString('pt-BR');
         }
         
-        // Verificar se a data é válida
-        if (data && !isNaN(data.getTime())) {
-            return data.toLocaleDateString('pt-BR');
-        }
-        
-        // Se chegou aqui, tentar extrair a data de uma string ISO
-        if (typeof conta.dataCompra === 'string') {
-            // Remover a parte de tempo se existir
-            const dataLimpa = conta.dataCompra.split('T')[0];
-            const partes = dataLimpa.split('-');
-            
-            if (partes.length === 3) {
-                // Formato ISO YYYY-MM-DD
-                return `${partes[2]}/${partes[1]}/${partes[0]}`;
-            }
-        }
-        
-        return "Data não disponível";
+        return formatarDataString(dataString);
     } catch (e) {
         console.error("Erro ao formatar data:", e);
-        return "Data não disponível";
+        // Em caso de erro, retornar a data atual em vez de "Data não disponível"
+        return new Date().toLocaleDateString('pt-BR');
     }
+}
+
+// Função auxiliar para formatar string de data
+function formatarDataString(dataString) {
+    if (!dataString || dataString === 'undefined') {
+        return new Date().toLocaleDateString('pt-BR');
+    }
+    
+    // Tentar converter a string para data
+    const data = new Date(dataString);
+    
+    // Verificar se a data é válida
+    if (!isNaN(data.getTime())) {
+        return data.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit', year: 'numeric'});
+    }
+    
+    // Tentar outro formato se a data for inválida
+    if (typeof dataString === 'string' && dataString.includes('-')) {
+        // Formato ISO YYYY-MM-DD
+        const partes = dataString.split('T')[0].split('-');
+        if (partes.length === 3) {
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+    }
+    
+    // Se não conseguir formatar, retornar a data atual
+    return new Date().toLocaleDateString('pt-BR');
 }
