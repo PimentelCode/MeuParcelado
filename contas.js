@@ -9,9 +9,19 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Carregar contas do usuário
     carregarContas();
+    
+    // Calcular e exibir o total do mês atual
+    atualizarTotalMesAtual();
 
+    // Preencher opções dos filtros
+    preencherOpcoesFiltros();
+    
     // Configurar eventos
     document.getElementById('filter').addEventListener('change', carregarContas);
+    document.getElementById('month-filter').addEventListener('change', function() {
+        carregarContas();
+        atualizarTotalMesAtual();
+    });
     document.getElementById('search-btn').addEventListener('click', buscarContas);
     document.getElementById('search').addEventListener('keyup', function(e) {
         if (e.key === 'Enter') {
@@ -32,17 +42,27 @@ function carregarContas() {
     // Buscar contas do usuário
     const contas = storage.getContas();
     const filtro = document.getElementById('filter').value;
+    const mesFiltro = document.getElementById('month-filter').value;
     const termoBusca = document.getElementById('search').value.toLowerCase();
     
     let contasFiltradas = contas;
     
-    // Aplicar filtro
+    // Aplicar filtro de status
     if (filtro === 'mes-atual') {
         contasFiltradas = filtrarContasMesAtual(contas);
     } else if (filtro === 'pendentes') {
         contasFiltradas = contas.filter(conta => !todasParcelasPagas(conta));
     } else if (filtro === 'pagas') {
         contasFiltradas = contas.filter(conta => todasParcelasPagas(conta));
+    }
+    
+    // Aplicar filtro de mês
+    if (mesFiltro !== 'todos') {
+        const mesNumero = parseInt(mesFiltro);
+        contasFiltradas = contasFiltradas.filter(conta => {
+            const dataVencimento = new Date(conta.dataVencimento || conta.dataCompra);
+            return dataVencimento.getMonth() === mesNumero;
+        });
     }
     
     // Aplicar busca
@@ -53,6 +73,9 @@ function carregarContas() {
     }
     
     exibirContas(contasFiltradas);
+    
+    // Atualizar o total do mês atual
+    atualizarTotalMesAtual();
 }
 
 // Função para filtrar contas do mês atual
@@ -80,27 +103,62 @@ function filtrarContasMesAtual(contas) {
 
 // Função para verificar se todas as parcelas estão pagas
 function todasParcelasPagas(conta) {
-    // Obter usuário logado
-    const usuarioAtual = storage.getItem('usuarioAtual');
-    if (!usuarioAtual) return;
+    // Se a conta já tem status 'pago', retornar true
+    if (conta.status === 'pago') return true;
     
-    // Buscar contas do usuário
-    const chaveDados = `contas_${usuarioAtual.email}`;
-    let contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
+    // Se a conta não tem parcelas, verificar o status diretamente
+    if (!conta.parcelas || conta.parcelas.length === 0) {
+        return false;
+    }
     
-    // Encontrar a conta pelo ID
-    const contaIndex = contas.findIndex(c => c.id === contaId);
-    if (contaIndex === -1) return;
+    // Verificar se todas as parcelas estão pagas
+    return conta.parcelas.every(parcela => parcela.status === 'pago');
+}
+
+// Função para preencher opções dos filtros
+function preencherOpcoesFiltros() {
+    // Preencher filtro de status
+    const filterSelect = document.getElementById('filter');
     
-    // Atualizar status da conta
-    contas[contaIndex].status = 'pago';
-    contas[contaIndex].dataPagamento = new Date().toISOString();
+    // Limpar opções existentes
+    filterSelect.innerHTML = '';
     
-    // Salvar alterações no localStorage
-    localStorage.setItem(chaveDados, JSON.stringify(contas));
+    // Adicionar opções de filtro
+    const filtros = [
+        { value: 'todos', text: 'Todas as contas' },
+        { value: 'mes-atual', text: 'Mês atual' },
+        { value: 'pendentes', text: 'Pendentes' },
+        { value: 'pagas', text: 'Pagas' }
+    ];
     
-    // Recarregar a tabela
-    carregarContas(usuarioLogado.email);
+    filtros.forEach(filtro => {
+        const option = document.createElement('option');
+        option.value = filtro.value;
+        option.textContent = filtro.text;
+        filterSelect.appendChild(option);
+    });
+    
+    // Preencher meses
+    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const monthFilter = document.getElementById('month-filter');
+    
+    // Limpar opções existentes
+    monthFilter.innerHTML = '';
+    
+    // Adicionar opção 'Todos'
+    const todosOption = document.createElement('option');
+    todosOption.value = 'todos';
+    todosOption.textContent = 'Todos os meses';
+    monthFilter.appendChild(todosOption);
+    
+    // Adicionar meses
+    meses.forEach((mes, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = mes;
+        monthFilter.appendChild(option);
+    });
 }
 
 // Função para buscar contas
@@ -108,56 +166,70 @@ function buscarContas() {
     carregarContas();
 }
 
-// Função para exibir as contas na tabela
+// Função para exibir as contas em cards responsivos
 function exibirContas(contas) {
-    // Obter referência ao corpo da tabela
-    const tbody = document.getElementById('accounts-body');
-    tbody.innerHTML = '';
-    
-    // Verificar se existem contas
+    const cardsContainer = document.getElementById('cards-container');
+    cardsContainer.innerHTML = '';
+
     if (contas.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="6" class="mensagem-vazia">Nenhuma conta cadastrada.</td>';
-        tbody.appendChild(tr);
+        document.getElementById('sem-contas').style.display = 'block';
         return;
+    } else {
+        document.getElementById('sem-contas').style.display = 'none';
     }
-    
-    // Exibir cada conta na tabela
+
     contas.forEach(conta => {
-        const tr = document.createElement('tr');
-        
         // Determinar o tipo da conta
-        let tipoConta = conta.parcelas && conta.parcelas.length > 1 ? 'parcelada' : 'única';
-        
+        let tipoConta = '';
+        let tipoIcone = '';
+        if (conta.tipoPagamento === 'parcelado') {
+            tipoConta = 'Parcelada';
+            tipoIcone = '<i class="fas fa-credit-card"></i>';
+        } else if (conta.tipoPagamento === 'fixa') {
+            tipoConta = 'Fixa';
+            tipoIcone = '<i class="fas fa-calendar-check"></i>';
+        } else {
+            tipoConta = 'Única';
+            tipoIcone = '<i class="fas fa-money-bill"></i>';
+        }
+
         // Determinar o status da conta
         let statusConta = conta.status || 'pendente';
-        
+        let statusTexto = statusConta === 'pago' ? 'Pago' : 'Pendente';
+
         // Determinar a data de vencimento
-        let dataVencimento = formatarData(conta.dataVencimento || conta.dataCompra);
-        
-        // Criar a linha da tabela
-        tr.innerHTML = `
-            <td>${conta.nome}</td>
-            <td>${tipoConta}</td>
-            <td>${formatarMoeda(conta.valor)}</td>
-            <td>${dataVencimento}</td>
-            <td><span class="status-tag ${statusConta}">${statusConta}</span></td>
-            <td class="acoes">
-                <button class="btn btn-small ${statusConta === 'pago' ? 'btn-disabled' : 'btn-success'}" 
-                        onclick="marcarComoPaga('${conta.id}')" 
-                        ${statusConta === 'pago' ? 'disabled' : ''}>
-                    Pagar
-                </button>
-                <button class="btn btn-small btn-primary" onclick="editarConta('${conta.id}')">
-                    Editar
-                </button>
-                <button class="btn btn-small btn-danger" onclick="excluirConta('${conta.id}')">
-                    Excluir
-                </button>
-            </td>
+        let dataVencimento;
+        if (conta.dataVencimento) {
+            dataVencimento = formatarData(conta.dataVencimento);
+        } else if (conta.parcelas && conta.parcelas.length > 0) {
+            dataVencimento = formatarData(conta.parcelas[0].dataVencimento);
+        } else {
+            dataVencimento = formatarData(conta.dataCompra);
+        }
+
+        // Criar o card
+        const card = document.createElement('div');
+        card.className = 'card-conta';
+        card.innerHTML = `
+            <div class="card-header">${tipoIcone} <span>${conta.nome}</span></div>
+            <div class="card-info">
+                <span><i class="fas fa-list"></i> ${tipoConta}</span>
+                <span><i class="fas fa-dollar-sign"></i> ${formatarMoeda(conta.valor)}</span>
+                <span><i class="fas fa-calendar-alt"></i> ${dataVencimento}</span>
+            </div>
+            <div class="card-status">
+                <span class="status-tag ${statusConta}">${statusTexto}</span>
+            </div>
+            <div class="card-actions">
+                ${statusConta === 'pago' ?
+                    `<span class="btn btn-small btn-pago"><i class="fas fa-check-circle"></i> Pago</span>` :
+                    `<button class="btn btn-small btn-success" onclick="marcarComoPaga('${conta.id}')"><i class="fas fa-check"></i> Pagar</button>`
+                }
+                <button class="btn btn-small btn-primary" onclick="editarConta('${conta.id}')"><i class="fas fa-edit"></i> Editar</button>
+                <button class="btn btn-small btn-danger" onclick="excluirConta('${conta.id}')"><i class="fas fa-trash"></i> Excluir</button>
+            </div>
         `;
-        
-        tbody.appendChild(tr);
+        cardsContainer.appendChild(card);
     });
 }
 
@@ -187,6 +259,9 @@ function marcarComoPaga(contaId) {
     
     // Recarregar a tabela
     carregarContas();
+    
+    // Atualizar o total do mês atual
+    atualizarTotalMesAtual();
     
     alert("Conta marcada como paga com sucesso!");
 }
@@ -221,6 +296,9 @@ function excluirConta(contaId) {
     // Recarregar a tabela
     carregarContas();
     
+    // Atualizar o total do mês atual
+    atualizarTotalMesAtual();
+    
     alert("Conta excluída com sucesso!");
 }
 
@@ -232,120 +310,113 @@ function formatarMoeda(valor) {
 }
 
 /**
+ * Função para calcular e exibir o total a pagar no mês atual
+ */
+function atualizarTotalMesAtual() {
+    // Obter todas as contas
+    const contas = storage.getContas();
+    
+    // Filtrar contas do mês atual e pendentes
+    const dataAtual = new Date();
+    const mesAtual = dataAtual.getMonth();
+    const anoAtual = dataAtual.getFullYear();
+    
+    const contasMesAtual = contas.filter(conta => {
+        // Verificar se a conta está pendente
+        if (conta.status === 'pago') return false;
+        
+        // Verificar se a conta vence no mês atual
+        const dataVencimento = new Date(conta.dataVencimento || conta.dataCompra);
+        return dataVencimento.getMonth() === mesAtual && 
+               dataVencimento.getFullYear() === anoAtual;
+    });
+    
+    // Calcular o total
+    const total = contasMesAtual.reduce((soma, conta) => soma + parseFloat(conta.valor || 0), 0);
+    
+    // Exibir o total na interface
+    document.getElementById('valor-mes-atual').textContent = formatarMoeda(total);
+}
+
+/**
  * Função auxiliar para formatar datas
  */
 function formatarData(dataString) {
-    if (!dataString) return '-';
-    const data = new Date(dataString);
-    return data.toLocaleDateString('pt-BR');
+    if (!dataString || dataString === 'undefined') {
+        // Retornar a data atual em vez de uma data padrão fixa
+        return new Date().toLocaleDateString('pt-BR');
+    }
+    
+    try {
+        // Tentar converter a string para data
+        const data = new Date(dataString);
+        
+        // Verificar se a data é válida
+        if (isNaN(data.getTime())) {
+            // Tentar outro formato se a data for inválida
+            if (typeof dataString === 'string' && dataString.includes('-')) {
+                // Formato ISO YYYY-MM-DD
+                const partes = dataString.split('T')[0].split('-');
+                if (partes.length === 3) {
+                    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+                }
+            }
+            // Se não conseguir formatar, retornar a data atual
+            return new Date().toLocaleDateString('pt-BR');
+        }
+        
+        // Formatar a data no padrão brasileiro
+        return data.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit', year: 'numeric'});
+    } catch (e) {
+        console.error('Erro ao formatar data:', e, dataString);
+        // Em caso de erro, retornar a data atual
+        return new Date().toLocaleDateString('pt-BR');
+    }
 }
 
-function renderizarTabela(contas, email) {
+// Função para renderizar a tabela de contas
+function renderizarTabela(contas) {
     const tbody = document.getElementById('accounts-body');
     tbody.innerHTML = '';
     
-    const hoje = new Date();
-    const seteDiasDepois = new Date();
-    seteDiasDepois.setDate(hoje.getDate() + 7);
+    if (contas.length === 0) {
+        // Exibir mensagem se não houver contas
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="6" class="text-center">Nenhuma conta encontrada</td>`;
+        tbody.appendChild(tr);
+        return;
+    }
     
     contas.forEach(conta => {
         const tr = document.createElement('tr');
         
-        // Verificar status para aplicar classe visual
-        let dataVencimento;
-        let dataFormatada = '';
+        // Formatar a data de vencimento
+        let dataFormatada = formatarData(conta);
         
-        try {
-            // Tentar obter a data de vencimento da conta
-            if (conta.dataVencimento) {
-                dataVencimento = new Date(conta.dataVencimento);
-                
-                // Verificar se a data é válida
-                if (!isNaN(dataVencimento.getTime())) {
-                    dataFormatada = dataVencimento.toLocaleDateString('pt-BR');
-                } else {
-                    // Se a data for inválida, tentar usar a data da primeira parcela
-                    if (conta.parcelas && conta.parcelas.length > 0) {
-                        dataVencimento = new Date(conta.parcelas[0].dataVencimento);
-                        if (!isNaN(dataVencimento.getTime())) {
-                            dataFormatada = dataVencimento.toLocaleDateString('pt-BR');
-                        } else {
-                            dataFormatada = 'Data inválida';
-                        }
-                    } else {
-                        // Se não houver parcelas, usar a data de compra
-                        dataVencimento = new Date(conta.dataCompra);
-                        if (!isNaN(dataVencimento.getTime())) {
-                            dataFormatada = dataVencimento.toLocaleDateString('pt-BR');
-                        } else {
-                            dataFormatada = 'Data inválida';
-                        }
-                    }
-                }
-            } else if (conta.parcelas && conta.parcelas.length > 0) {
-                // Se não houver dataVencimento, usar a data da primeira parcela
-                dataVencimento = new Date(conta.parcelas[0].dataVencimento);
-                if (!isNaN(dataVencimento.getTime())) {
-                    dataFormatada = dataVencimento.toLocaleDateString('pt-BR');
-                } else {
-                    dataFormatada = 'Data inválida';
-                }
-            } else {
-                // Se não houver parcelas, usar a data de compra
-                dataVencimento = new Date(conta.dataCompra);
-                if (!isNaN(dataVencimento.getTime())) {
-                    dataFormatada = dataVencimento.toLocaleDateString('pt-BR');
-                } else {
-                    dataFormatada = 'Data inválida';
-                }
-            }
-        } catch (e) {
-            console.error('Erro ao processar data:', e);
-            dataFormatada = 'Data inválida';
-            dataVencimento = new Date(); // Data padrão para evitar erros
-        }
+        // Determinar o status da conta
+        let statusClass = conta.status === 'pago' ? 'pago' : 'pendente';
+        let statusText = conta.status === 'pago' ? 'Pago' : 'Pendente';
         
-        // Aplicar classe visual baseada no status e data
-        if (conta.status !== 'pago') {
-            if (dataVencimento < hoje) {
-                tr.classList.add('conta-vencida');
-            } else if (dataVencimento <= seteDiasDepois) {
-                tr.classList.add('conta-proxima');
-            } else {
-                tr.classList.add('conta-normal');
-            }
-        }
-        
-        // Determinar classe de status
-        let statusClass = 'pendente';
-        if (conta.status === 'pago') {
-            statusClass = 'pago';
-        } else if (dataVencimento < hoje) {
-            statusClass = 'vencido';
-        }
-        
-        // Determinar texto de status
-        let statusText = 'Pendente';
-        if (conta.status === 'pago') {
-            statusText = 'Pago';
-        } else if (dataVencimento < hoje) {
-            statusText = 'Vencido';
-        }
-        
+        // Criar HTML da linha
         tr.innerHTML = `
             <td>${conta.nome}</td>
-            <td>${conta.tipoPagamento === 'parcelado' ? 'Parcelado' : (conta.tipoPagamento === 'fixa' ? 'Fixa' : 'À Vista')}</td>
-            <td>R$ ${conta.valor.toFixed(2).replace('.', ',')}</td>
+            <td>${conta.tipoPagamento === 'parcelado' ? '<i class="fas fa-credit-card"></i> Parcelada' : 
+                 (conta.tipoPagamento === 'fixa' ? '<i class="fas fa-calendar-check"></i> Fixa' : 
+                 '<i class="fas fa-money-bill"></i> À Vista')}</td>
+            <td>R$ ${conta.valor.toFixed(2)}</td>
             <td>${dataFormatada}</td>
-            <td><span class="status-tag ${statusClass}">${statusText}</span></td>
             <td>
-                <button class="btn-icon btn-success" onclick="marcarComoPaga('${conta.id}')" ${conta.status === 'pago' ? 'disabled' : ''}>
-                    <i class="fas fa-check"></i> Pago
-                </button>
-                <button class="btn-icon btn-primary" onclick="editarConta('${conta.id}')">
+                <span class="status-tag ${statusClass}">${statusText}</span>
+            </td>
+            <td class="acoes">
+                ${conta.status === 'pago' ? '' : 
+                `<button class="btn btn-sm btn-success" onclick="marcarComoPaga('${conta.id}')">
+                    <i class="fas fa-check"></i> Pagar
+                </button>`}
+                <button class="btn btn-sm btn-primary" onclick="editarConta('${conta.id}')">
                     <i class="fas fa-edit"></i> Editar
                 </button>
-                <button class="btn-icon btn-danger" onclick="excluirConta('${conta.id}')">
+                <button class="btn btn-sm btn-danger" onclick="excluirConta('${conta.id}')">
                     <i class="fas fa-trash"></i> Excluir
                 </button>
             </td>
@@ -353,4 +424,61 @@ function renderizarTabela(contas, email) {
         
         tbody.appendChild(tr);
     });
+}
+
+// Função para formatar a data corretamente
+function formatarData(conta) {
+    try {
+        // Se o parâmetro for uma string de data diretamente
+        if (typeof conta === 'string') {
+            return formatarDataString(conta);
+        }
+        
+        // Tentar obter a data de diferentes fontes do objeto conta
+        let dataString;
+        
+        if (conta.dataVencimento) {
+            dataString = conta.dataVencimento;
+        } else if (conta.parcelas && conta.parcelas.length > 0) {
+            dataString = conta.parcelas[0].dataVencimento;
+        } else if (conta.dataCompra) {
+            dataString = conta.dataCompra;
+        } else {
+            // Se não encontrar nenhuma data, usar a data atual
+            return new Date().toLocaleDateString('pt-BR');
+        }
+        
+        return formatarDataString(dataString);
+    } catch (e) {
+        console.error("Erro ao formatar data:", e);
+        // Em caso de erro, retornar a data atual em vez de "Data não disponível"
+        return new Date().toLocaleDateString('pt-BR');
+    }
+}
+
+// Função auxiliar para formatar string de data
+function formatarDataString(dataString) {
+    if (!dataString || dataString === 'undefined') {
+        return new Date().toLocaleDateString('pt-BR');
+    }
+    
+    // Tentar converter a string para data
+    const data = new Date(dataString);
+    
+    // Verificar se a data é válida
+    if (!isNaN(data.getTime())) {
+        return data.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit', year: 'numeric'});
+    }
+    
+    // Tentar outro formato se a data for inválida
+    if (typeof dataString === 'string' && dataString.includes('-')) {
+        // Formato ISO YYYY-MM-DD
+        const partes = dataString.split('T')[0].split('-');
+        if (partes.length === 3) {
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+    }
+    
+    // Se não conseguir formatar, retornar a data atual
+    return new Date().toLocaleDateString('pt-BR');
 }

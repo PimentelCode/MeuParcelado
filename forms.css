@@ -1,0 +1,85 @@
+/* Estilos para formulários */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--white);
+    background-color: var(--gray-dark);
+    border: 1px solid var(--gray);
+    border-radius: 0.5rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(130, 10, 209, 0.25);
+}
+
+.form-control::placeholder {
+    color: var(--gray-light);
+    opacity: 0.7;
+}
+
+/* Botões com área de toque adequada */
+.btn {
+    display: inline-block;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.5rem;
+    transition: all 0.15s ease-in-out;
+    cursor: pointer;
+    min-height: 3rem; /* Altura mínima para área de toque */
+    min-width: 6rem; /* Largura mínima para área de toque */
+}
+
+.btn i {
+    margin-right: 0.5rem;
+}
+
+/* Botão voltar */
+.btn-back {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--white);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background-color: var(--gray-dark);
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.btn-back:hover {
+    background-color: var(--gray);
+}
+
+/* Responsividade para formulários */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .form-group {
+        width: 100%;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
