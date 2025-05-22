@@ -323,24 +323,40 @@
     }
 
     @media (max-width: 480px) {
-      nav.main-nav ul {
-        gap: 0.8rem;
-        font-size: 0.9rem;
+      .filter-section {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.7rem 0.5rem;
+        margin-bottom: 1rem;
       }
-
-      .page-header h2 {
-        font-size: 1.4rem;
+      .filter-container {
+        width: 100%;
+        margin-bottom: 0.5rem;
       }
-
-      .total-mes-atual {
-        font-size: 0.9rem;
+      .filter-section label,
+      .filter-section select,
+      .filter-section input {
+        font-size: 0.95rem;
       }
-
-      .btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.85rem;
+      .search-container {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+      .form-control {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.95rem;
+        min-height: 36px;
+      }
+      .filter-section .form-control {
+        margin-bottom: 0.5rem;
+      }
+      .filter-section {
+        min-width: unset;
+        max-width: 100%;
       }
     }
+    /* Remove extra closing brace that was causing the CSS syntax error */
   </style>
 </head>
 <body>
