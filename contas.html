@@ -125,6 +125,52 @@
       color: white;
       font-size: 0.95rem;
     }
+    
+    /* Estilos para corrigir o contraste nos dropdowns */
+    select.form-control option {
+      background-color: #2c3e50;
+      color: white;
+      padding: 8px;
+      text-shadow: none;
+    }
+    
+    /* Estilo para o dropdown aberto */
+    select.form-control:focus {
+      outline: 2px solid var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 184, 148, 0.3);
+    }
+    
+    /* Estilo para o dropdown quando está aberto */
+    select.form-control optgroup,
+    select.form-control option:checked {
+      background-color: var(--primary-dark);
+      color: white;
+      font-weight: bold;
+    }
+    
+    /* Estilo para hover nas opções */
+    select.form-control option:hover,
+    select.form-control option:focus {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    /* Melhorar visibilidade do texto selecionado no dropdown */
+    select.form-control {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      padding-right: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Estilo para o dropdown aberto - lista de opções */
+    select.form-control:focus option {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
     .search-container {
       display: flex;
@@ -301,7 +347,7 @@
         </div>
       </div>
       <a href="nova-conta.html" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Adicionar nova conta
+        <i class="fas fa-plus"></i> Nova Conta
       </a>
     </section>
 
@@ -370,7 +416,7 @@
   </footer>
 
   <script src="js/storage.js"></script>
-  <script src="js/notifications.js"></script>
+  <script src="js/notificacoes.js"></script>
   <script src="js/contas.js"></script> <!-- Se quiser separar JS -->
 </body>
 </html>

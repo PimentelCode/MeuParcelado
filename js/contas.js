@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Calcular e exibir o total do mês atual
     atualizarTotalMesAtual();
 
+    // Preencher opções dos filtros
+    preencherOpcoesFiltros();
+    
     // Configurar eventos
     document.getElementById('filter').addEventListener('change', carregarContas);
     document.getElementById('month-filter').addEventListener('change', function() {
@@ -100,27 +103,62 @@ function filtrarContasMesAtual(contas) {
 
 // Função para verificar se todas as parcelas estão pagas
 function todasParcelasPagas(conta) {
-    // Obter usuário logado
-    const usuarioAtual = storage.getItem('usuarioAtual');
-    if (!usuarioAtual) return;
+    // Se a conta já tem status 'pago', retornar true
+    if (conta.status === 'pago') return true;
     
-    // Buscar contas do usuário
-    const chaveDados = `contas_${usuarioAtual.email}`;
-    let contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
+    // Se a conta não tem parcelas, verificar o status diretamente
+    if (!conta.parcelas || conta.parcelas.length === 0) {
+        return false;
+    }
     
-    // Encontrar a conta pelo ID
-    const contaIndex = contas.findIndex(c => c.id === contaId);
-    if (contaIndex === -1) return;
+    // Verificar se todas as parcelas estão pagas
+    return conta.parcelas.every(parcela => parcela.status === 'pago');
+}
+
+// Função para preencher opções dos filtros
+function preencherOpcoesFiltros() {
+    // Preencher filtro de status
+    const filterSelect = document.getElementById('filter');
     
-    // Atualizar status da conta
-    contas[contaIndex].status = 'pago';
-    contas[contaIndex].dataPagamento = new Date().toISOString();
+    // Limpar opções existentes
+    filterSelect.innerHTML = '';
     
-    // Salvar alterações no localStorage
-    localStorage.setItem(chaveDados, JSON.stringify(contas));
+    // Adicionar opções de filtro
+    const filtros = [
+        { value: 'todos', text: 'Todas as contas' },
+        { value: 'mes-atual', text: 'Mês atual' },
+        { value: 'pendentes', text: 'Pendentes' },
+        { value: 'pagas', text: 'Pagas' }
+    ];
     
-    // Recarregar a tabela
-    carregarContas(usuarioLogado.email);
+    filtros.forEach(filtro => {
+        const option = document.createElement('option');
+        option.value = filtro.value;
+        option.textContent = filtro.text;
+        filterSelect.appendChild(option);
+    });
+    
+    // Preencher meses
+    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const monthFilter = document.getElementById('month-filter');
+    
+    // Limpar opções existentes
+    monthFilter.innerHTML = '';
+    
+    // Adicionar opção 'Todos'
+    const todosOption = document.createElement('option');
+    todosOption.value = 'todos';
+    todosOption.textContent = 'Todos os meses';
+    monthFilter.appendChild(todosOption);
+    
+    // Adicionar meses
+    meses.forEach((mes, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = mes;
+        monthFilter.appendChild(option);
+    });
 }
 
 // Função para buscar contas
@@ -147,13 +185,27 @@ function exibirContas(contas) {
         const tr = document.createElement('tr');
         
         // Determinar o tipo da conta
-        let tipoConta = conta.parcelas && conta.parcelas.length > 1 ? 'parcelada' : 'única';
+        let tipoConta = '';
+        if (conta.tipoPagamento === 'parcelado') {
+            tipoConta = 'parcelada';
+        } else if (conta.tipoPagamento === 'fixa') {
+            tipoConta = 'fixa';
+        } else {
+            tipoConta = 'única';
+        }
         
         // Determinar o status da conta
         let statusConta = conta.status || 'pendente';
         
         // Determinar a data de vencimento
-        let dataVencimento = formatarData(conta.dataVencimento || conta.dataCompra);
+        let dataVencimento;
+        if (conta.dataVencimento) {
+            dataVencimento = formatarData(conta.dataVencimento);
+        } else if (conta.parcelas && conta.parcelas.length > 0) {
+            dataVencimento = formatarData(conta.parcelas[0].dataVencimento);
+        } else {
+            dataVencimento = formatarData(conta.dataCompra);
+        }
         
         // Criar a linha da tabela
         tr.innerHTML = `
@@ -166,13 +218,13 @@ function exibirContas(contas) {
                 <button class="btn btn-small ${statusConta === 'pago' ? 'btn-disabled' : 'btn-success'}" 
                         onclick="marcarComoPaga('${conta.id}')" 
                         ${statusConta === 'pago' ? 'disabled' : ''}>
-                    Pagar
+                    <i class="fas fa-check"></i> Pagar
                 </button>
                 <button class="btn btn-small btn-primary" onclick="editarConta('${conta.id}')">
-                    Editar
+                    <i class="fas fa-edit"></i> Editar
                 </button>
                 <button class="btn btn-small btn-danger" onclick="excluirConta('${conta.id}')">
-                    Excluir
+                    <i class="fas fa-trash"></i> Excluir
                 </button>
             </td>
         `;
@@ -290,9 +342,36 @@ function atualizarTotalMesAtual() {
  * Função auxiliar para formatar datas
  */
 function formatarData(dataString) {
-    if (!dataString) return '-';
-    const data = new Date(dataString);
-    return data.toLocaleDateString('pt-BR');
+    if (!dataString || dataString === 'undefined') {
+        // Retornar a data atual em vez de uma data padrão fixa
+        return new Date().toLocaleDateString('pt-BR');
+    }
+    
+    try {
+        // Tentar converter a string para data
+        const data = new Date(dataString);
+        
+        // Verificar se a data é válida
+        if (isNaN(data.getTime())) {
+            // Tentar outro formato se a data for inválida
+            if (typeof dataString === 'string' && dataString.includes('-')) {
+                // Formato ISO YYYY-MM-DD
+                const partes = dataString.split('T')[0].split('-');
+                if (partes.length === 3) {
+                    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+                }
+            }
+            // Se não conseguir formatar, retornar a data atual
+            return new Date().toLocaleDateString('pt-BR');
+        }
+        
+        // Formatar a data no padrão brasileiro
+        return data.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit', year: 'numeric'});
+    } catch (e) {
+        console.error('Erro ao formatar data:', e, dataString);
+        // Em caso de erro, retornar a data atual
+        return new Date().toLocaleDateString('pt-BR');
+    }
 }
 
 // Função para renderizar a tabela de contas
