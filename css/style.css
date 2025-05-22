@@ -97,8 +97,14 @@ body {
     background-color: var(--primary);
 }
 
-.main-nav a.active {
-    background-color: var(--primary);
+nav.main-nav a.active {
+  color: #fff !important;
+  background-color: var(--primary);
+  border-radius: 8px;
+  padding: 0.4em 1.2em;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0,184,148,0.15);
+  transition: background 0.2s, color 0.2s;
 }
 
 /* Formulários */
@@ -372,7 +378,7 @@ tr:hover {
 
 .progress-fill {
     height: 100%;
-    background-color: #820AD1;
+    background-color: #1dd1a1;
     border-radius: 4px;
     transition: width 0.5s ease;
 }
@@ -902,14 +908,14 @@ h4 {
 }
 
 .btn-primary {
-    background-color: #820AD1;
+    background-color: #00b894;
     color: white;
 }
 
 .btn-primary:hover {
-    background-color: #9B30E8;
+    background-color: #00b894;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(130, 10, 209, 0.3);
+    box-shadow: 0 4px 8px rgba(10, 209, 209, 0.3);
 }
 
 .btn-danger {

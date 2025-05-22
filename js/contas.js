@@ -267,6 +267,13 @@ function marcarComoPaga(contaId) {
 }
 
 // Função para excluir uma conta
+function editarConta(contaId) {
+    // Salva o ID da conta a ser editada no localStorage de forma segura
+    localStorage.setItem('contaEditandoId', JSON.stringify(contaId));
+    // Redireciona para a página de edição
+    window.location.href = 'editar-conta.html';
+}
+
 function excluirConta(contaId) {
     // Confirmar exclusão
     if (!confirm('Tem certeza que deseja excluir esta conta?')) {

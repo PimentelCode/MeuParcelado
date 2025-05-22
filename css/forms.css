@@ -83,3 +83,9 @@
         margin-bottom: 0.5rem;
     }
 }
+
+
+.form-control option {
+    color: #222;
+    background-color: #fff;
+}

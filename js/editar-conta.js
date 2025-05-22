@@ -1,164 +1,184 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Verificar se é modo de edição (URL contém id)
-    const urlParams = new URLSearchParams(window.location.search);
-    const contaId = urlParams.get('id');
-    
-    if (contaId) {
-        // Buscar usuário atual
-        const usuarioAtual = JSON.parse(localStorage.getItem('usuarioAtual'));
-        if (!usuarioAtual) {
+    // Verificar autenticação
+    const usuarioAtual = JSON.parse(localStorage.getItem('usuarioAtual'));
+    if (!usuarioAtual) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // Configurar evento de logout
+    document.getElementById('logout-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        if (confirm('Tem certeza que deseja sair?')) {
+            localStorage.removeItem('usuarioAtual');
             window.location.href = 'index.html';
+        }
+    });
+
+    // Obter o ID da conta a ser editada salvo no localStorage
+    const contaId = JSON.parse(localStorage.getItem('contaEditandoId'));
+    if (!contaId) {
+        alert('Conta não selecionada para edição.');
+        window.location.href = 'contas.html';
+        return;
+    }
+
+    // Buscar a conta correta
+    const chaveDados = `contas_${usuarioAtual.email}`;
+    const contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
+    const conta = contas.find(c => c.id == contaId);
+    if (!conta) {
+        alert('Conta não encontrada!');
+        window.location.href = 'contas.html';
+        return;
+    }
+
+    // Configurar exibição de parcelas
+    const tipoPagamentoSelect = document.getElementById('tipo-pagamento');
+    const parcelasGroup = document.getElementById('parcelas-group');
+    const numeroParcelasSelect = document.getElementById('numero-parcelas');
+
+    // Criar div para parcelas pagas se não existir
+    let parcelasPagasDiv = document.getElementById('parcelas-pagas-div');
+    if (!parcelasPagasDiv) {
+        parcelasPagasDiv = document.createElement('div');
+        parcelasPagasDiv.id = 'parcelas-pagas-div';
+        parcelasPagasDiv.style.marginTop = '15px';
+        document.getElementById('parcelas-group').after(parcelasPagasDiv);
+    }
+
+    // Mostrar/ocultar opções de parcelas
+    tipoPagamentoSelect.addEventListener('change', function() {
+        if (this.value === 'parcelado') {
+            parcelasGroup.style.display = 'block';
+            atualizarCheckboxParcelasPagas(getParcelasPagas(conta));
+        } else {
+            parcelasGroup.style.display = 'none';
+            parcelasPagasDiv.style.display = 'none';
+        }
+    });
+
+    // Atualizar parcelas pagas quando o número de parcelas mudar
+    numeroParcelasSelect.addEventListener('change', function() {
+        if (tipoPagamentoSelect.value === 'parcelado') {
+            atualizarCheckboxParcelasPagas(getParcelasPagas(conta));
+        }
+    });
+
+    // Função para obter parcelas pagas da conta
+    function getParcelasPagas(conta) {
+        if (!conta.parcelas) return [];
+        return conta.parcelas
+            .filter(p => p.status === 'pago')
+            .map(p => p.numero);
+    }
+
+    // Função para atualizar checkboxes de parcelas pagas
+    function atualizarCheckboxParcelasPagas(parcelasPagas = []) {
+        const tipoPagamento = document.getElementById('tipo-pagamento').value;
+        const parcelasPagasDiv = document.getElementById('parcelas-pagas-div');
+        const numParcelas = parseInt(document.getElementById('numero-parcelas').value) || 2;
+        
+        if (tipoPagamento === 'parcelado') {
+            let html = '<label style="margin-top:10px;color:#fff;font-weight:600;">Parcelas já pagas:</label><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;">';
+            for (let i = 1; i <= numParcelas; i++) {
+                const checked = parcelasPagas.includes(i) ? 'checked' : '';
+                html += `<label style='color:#fff;'><input type='checkbox' name='parcelas-pagas' value='${i}' style='margin-right:4px;' ${checked}>${i}ª</label>`;
+            }
+            html += '</div>';
+            parcelasPagasDiv.innerHTML = html;
+            parcelasPagasDiv.style.display = 'block';
+        } else {
+            parcelasPagasDiv.innerHTML = '';
+            parcelasPagasDiv.style.display = 'none';
+        }
+    }
+
+    // Preencher os campos do formulário
+    document.getElementById('nome').value = conta.nome || '';
+    document.getElementById('categoria').value = conta.categoria || '';
+    document.getElementById('valor').value = conta.valor || '';
+    if (conta.dataCompra) {
+        document.getElementById('data-compra').value = conta.dataCompra.split('T')[0];
+    }
+    if (conta.tipoPagamento) {
+        document.getElementById('tipo-pagamento').value = conta.tipoPagamento;
+    }
+    if (conta.status) {
+        document.getElementById('status').value = conta.status;
+    }
+    if (conta.tipoPagamento === 'parcelado' && conta.parcelas && conta.parcelas.length > 0) {
+        document.getElementById('numero-parcelas').value = conta.parcelas.length;
+        parcelasGroup.style.display = 'block';
+        atualizarCheckboxParcelasPagas(getParcelasPagas(conta));
+    }
+
+    // Configurar evento de envio do formulário
+    const formEditarConta = document.getElementById('editar-conta-form');
+    formEditarConta.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Obter valores do formulário
+        const nome = document.getElementById('nome').value;
+        const categoria = document.getElementById('categoria').value;
+        const valor = parseFloat(document.getElementById('valor').value);
+        const dataCompra = document.getElementById('data-compra').value;
+        const tipoPagamento = document.getElementById('tipo-pagamento').value;
+        const status = document.getElementById('status').value;
+        
+        // Validar campos obrigatórios
+        if (!nome || !categoria || isNaN(valor) || !dataCompra || !tipoPagamento || !status) {
+            alert('Por favor, preencha todos os campos obrigatórios.');
             return;
         }
         
-        // Buscar conta no localStorage
-        const chaveDados = `contas_${usuarioAtual.email}`;
-        const contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
-        const conta = contas.find(c => c.id == contaId);
+        // Criar objeto da conta atualizada
+        const contaAtualizada = {
+            id: contaId,
+            nome: nome,
+            categoria: categoria,
+            valor: valor,
+            dataCompra: dataCompra,
+            tipoPagamento: tipoPagamento,
+            status: status,
+            parcelas: []
+        };
         
-        if (conta) {
-            // Alterar o título da página para indicar edição
-            document.querySelector('.page-header h2').textContent = 'Editar Conta';
+        // Adicionar informações de parcelas se for parcelado
+        if (tipoPagamento === 'parcelado') {
+            const numeroParcelas = parseInt(document.getElementById('numero-parcelas').value);
+            const valorParcela = valor / numeroParcelas;
+            const dataCompraObj = new Date(dataCompra);
             
-            // Preencher formulário com dados da conta
-            document.getElementById('nome').value = conta.nome;
-            document.getElementById('categoria').value = conta.categoria || '';
-            document.getElementById('valor').value = conta.valor;
+            // Coletar parcelas pagas
+            const checkboxes = document.querySelectorAll('input[name="parcelas-pagas"]:checked');
+            const parcelasPagas = Array.from(checkboxes).map(cb => parseInt(cb.value));
             
-            // Definir data de compra
-            if (conta.dataCompra) {
-                document.getElementById('data-compra').value = conta.dataCompra.split('T')[0];
+            for (let i = 0; i < numeroParcelas; i++) {
+                const dataVencimento = new Date(dataCompraObj);
+                dataVencimento.setMonth(dataCompraObj.getMonth() + i);
+                
+                const statusParcela = parcelasPagas.includes(i + 1) ? 'pago' : 'pendente';
+                
+                contaAtualizada.parcelas.push({
+                    numero: i + 1,
+                    valor: valorParcela,
+                    dataVencimento: dataVencimento.toISOString().split('T')[0],
+                    status: statusParcela
+                });
             }
-            
-            // Definir tipo de pagamento
-            const tipoPagamentoSelect = document.getElementById('tipo-pagamento');
-            if (conta.tipoPagamento) {
-                tipoPagamentoSelect.value = conta.tipoPagamento;
-            } else if (conta.parcelas && conta.parcelas.length > 1) {
-                tipoPagamentoSelect.value = 'parcelado';
-            } else {
-                tipoPagamentoSelect.value = 'avista';
-            }
-            
-            // Mostrar campo de parcelas se for parcelado
-            const parcelasGroup = document.getElementById('parcelas-group');
-            if (tipoPagamentoSelect.value === 'parcelado') {
-                parcelasGroup.style.display = 'block';
-                
-                // Definir número de parcelas
-                if (conta.parcelas && conta.parcelas.length > 0) {
-                    document.getElementById('numero-parcelas').value = conta.parcelas.length;
-                }
-            }
-            
-            // Definir status
-            if (conta.status) {
-                document.getElementById('status').value = conta.status;
-            }
-            
-            // Adicionar ID da conta como campo oculto
-            const idInput = document.createElement('input');
-            idInput.type = 'hidden';
-            idInput.id = 'conta-id';
-            idInput.value = contaId;
-            document.getElementById('nova-conta-form').appendChild(idInput);
-            
-            // Atualizar preview de parcelas
-            if (typeof atualizarPreviewParcelas === 'function') {
-                atualizarPreviewParcelas();
-            }
-            
-            // Modificar o comportamento do formulário para atualizar em vez de criar
-            const form = document.getElementById('nova-conta-form');
-            const originalSubmitHandler = form.onsubmit;
-            
-            form.onsubmit = function(e) {
-                e.preventDefault();
-                
-                // Obter dados do formulário
-                const nome = document.getElementById('nome').value;
-                const categoria = document.getElementById('categoria').value;
-                const valor = parseFloat(document.getElementById('valor').value);
-                const dataCompra = document.getElementById('data-compra').value;
-                const tipoPagamento = document.getElementById('tipo-pagamento').value;
-                const status = document.getElementById('status').value;
-                
-                // Criar objeto da conta atualizada
-                const contaAtualizada = {
-                    id: contaId,
-                    nome: nome,
-                    categoria: categoria,
-                    valor: valor,
-                    dataCompra: dataCompra,
-                    tipoPagamento: tipoPagamento,
-                    status: status,
-                    parcelas: []
-                };
-                
-                // Adicionar parcelas se for parcelado
-                if (tipoPagamento === 'parcelado') {
-                    const numeroParcelas = parseInt(document.getElementById('numero-parcelas').value);
-                    const valorParcela = valor / numeroParcelas;
-                    
-                    for (let i = 0; i < numeroParcelas; i++) {
-                        // Calcular data de vencimento (mesmo dia dos meses seguintes)
-                        const dataVencimento = new Date(dataCompra);
-                        dataVencimento.setMonth(dataVencimento.getMonth() + i);
-                        
-                        // Determinar status da parcela
-                        let statusParcela = 'pendente';
-                        if (i === 0 && status === 'pago') {
-                            statusParcela = 'pago';
-                        }
-                        
-                        // Adicionar parcela
-                        contaAtualizada.parcelas.push({
-                            numero: i + 1,
-                            valor: valorParcela,
-                            dataVencimento: dataVencimento.toISOString(),
-                            status: statusParcela
-                        });
-                    }
-                    
-                    // Definir data de vencimento como a data da última parcela
-                    contaAtualizada.dataVencimento = contaAtualizada.parcelas[contaAtualizada.parcelas.length - 1].dataVencimento;
-                } else {
-                    // Para pagamento à vista, criar uma única "parcela"
-                    const dataVencimento = new Date(dataCompra);
-                    
-                    contaAtualizada.parcelas.push({
-                        numero: 1,
-                        valor: valor,
-                        dataVencimento: dataVencimento.toISOString(),
-                        status: status
-                    });
-                    
-                    // Definir data de vencimento
-                    contaAtualizada.dataVencimento = dataVencimento.toISOString();
-                }
-                
-                // Buscar contas do usuário
-                const contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
-                
-                // Encontrar índice da conta a ser atualizada
-                const contaIndex = contas.findIndex(c => c.id == contaId);
-                
-                if (contaIndex !== -1) {
-                    // Atualizar conta existente
-                    contas[contaIndex] = contaAtualizada;
-                    
-                    // Salvar no localStorage
-                    localStorage.setItem(chaveDados, JSON.stringify(contas));
-                    
-                    alert('Conta atualizada com sucesso!');
-                    window.location.href = 'contas.html';
-                } else {
-                    alert('Erro: Conta não encontrada!');
-                }
-            };
-        } else {
-            alert('Erro: Conta não encontrada!');
-            window.location.href = 'contas.html';
         }
-    }
+        
+        // Atualizar conta no localStorage
+        const indice = contas.findIndex(c => c.id == contaId);
+        if (indice !== -1) {
+            contas[indice] = contaAtualizada;
+            localStorage.setItem(chaveDados, JSON.stringify(contas));
+            alert('Conta atualizada com sucesso!');
+            window.location.href = 'contas.html';
+        } else {
+            alert('Erro ao atualizar conta. Tente novamente.');
+        }
+    });
 });

@@ -396,7 +396,7 @@
     <section class="filter-section">
       <div class="filter-container">
         <label for="filter"><i class="fas fa-filter"></i> Filtrar por:</label>
-        <select id="filter" class="form-control">
+        <select id="filter" class="form-control filtro-ativo">
           <option value="todas">Todas as contas</option>
           <option value="mes-atual">Mês atual</option>
           <option value="pendentes">Contas pendentes</option>
@@ -405,7 +405,7 @@
       </div>
       <div class="filter-container">
         <label for="month-filter"><i class="fas fa-calendar-alt"></i> Mês:</label>
-        <select id="month-filter" class="form-control">
+        <select id="month-filter" class="form-control filtro-ativo">
           <option value="todos">Todos</option>
           <option value="0">Janeiro</option>
           <option value="1">Fevereiro</option>
@@ -422,10 +422,79 @@
         </select>
       </div>
       <div class="search-container">
-        <input type="text" id="search" class="form-control" placeholder="Buscar conta por nome ou valor..." />
+        <input type="text" id="search" class="form-control filtro-ativo" placeholder="Buscar conta por nome ou valor..." />
         <button id="search-btn" class="btn btn-secondary"><i class="fas fa-search"></i></button>
+        <button id="clear-filters" class="btn btn-danger" style="min-width:unset;padding:8px 10px;"><i class="fas fa-times"></i></button>
       </div>
     </section>
+    <style>
+      @media (max-width: 480px) {
+        .filter-section {
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: 0.2rem;
+          padding: 0.3rem 0.1rem;
+          margin-bottom: 0.5rem;
+          align-items: flex-start;
+        }
+        .filter-container {
+          width: 48%;
+          min-width: 120px;
+          margin-bottom: 0.1rem;
+        }
+        .search-container {
+          width: 100%;
+          flex-direction: row;
+          gap: 0.1rem;
+          margin-top: 0.1rem;
+        }
+        .form-control {
+          padding: 0.3rem 0.4rem;
+          font-size: 0.92rem;
+          min-height: 30px;
+        }
+        .filter-section label,
+        .filter-section select,
+        .filter-section input {
+          font-size: 0.92rem;
+        }
+        #clear-filters {
+          min-width: 36px;
+          font-size: 1.1rem;
+        }
+      }
+      .filtro-ativo:focus {
+        outline: 2px solid var(--primary-light);
+        box-shadow: 0 0 0 2px rgba(0, 184, 148, 0.25);
+        background-color: rgba(0,184,148,0.08);
+      }
+      #clear-filters {
+        margin-left: 2px;
+        background: var(--danger);
+        color: #fff;
+        border-radius: 8px;
+        border: none;
+        transition: background 0.2s;
+      }
+      #clear-filters:hover {
+        background: #c0392b;
+      }
+    </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const clearBtn = document.getElementById('clear-filters');
+        if(clearBtn){
+          clearBtn.onclick = function() {
+            document.getElementById('filter').selectedIndex = 0;
+            document.getElementById('month-filter').selectedIndex = 0;
+            document.getElementById('search').value = '';
+            document.getElementById('search').blur();
+            // Se houver função de atualização, chame-a aqui
+            if(typeof atualizarContas === 'function') atualizarContas();
+          };
+        }
+      });
+    </script>
 
     <section class="accounts-list">
       <div id="cards-container" class="cards-container">

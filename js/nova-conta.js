@@ -183,23 +183,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tipoPagamento === 'parcelado') {
             const numeroParcelas = parseInt(document.getElementById('numero-parcelas').value);
             const valorParcela = valor / numeroParcelas;
-            
+            const dataCompra = new Date(dataCompraInput.value);
+            // Coletar parcelas pagas
+            const checkboxes = document.querySelectorAll('input[name="parcelas-pagas"]:checked');
+            const pagasSelecionadas = Array.from(checkboxes).map(cb => parseInt(cb.value));
             for (let i = 0; i < numeroParcelas; i++) {
-                // Calcular data de vencimento (mesmo dia dos meses seguintes)
                 const dataVencimento = new Date(dataCompra);
-                dataVencimento.setMonth(dataVencimento.getMonth() + i);
-                
-                // Determinar status da parcela
-                let statusParcela = 'pendente';
-                if (i === 0 && status === 'pago') {
-                    statusParcela = 'pago';
-                }
-                
-                // Adicionar parcela
+                dataVencimento.setMonth(dataCompra.getMonth() + i);
+                let statusParcela = pagasSelecionadas.includes(i + 1) ? 'pago' : 'pendente';
                 novaConta.parcelas.push({
                     numero: i + 1,
                     valor: valorParcela,
-                    dataVencimento: dataVencimento.toISOString(),
+                    dataVencimento: dataVencimento.toISOString().split('T')[0],
                     status: statusParcela
                 });
             }
@@ -243,4 +238,125 @@ document.addEventListener('DOMContentLoaded', function() {
         alert('Conta salva com sucesso!');
         window.location.href = 'contas.html';
     });
+});
+
+
+// Função para atualizar visualmente os checkboxes de parcelas pagas
+function atualizarCheckboxParcelasPagas(parcelasPagas = []) {
+  const tipoPagamento = document.getElementById('tipo-pagamento').value;
+  const parcelasPagasDiv = document.getElementById('parcelas-pagas-div');
+  const numParcelas = parseInt(document.getElementById('numero-parcelas').value) || 2;
+  if (tipoPagamento === 'parcelado') {
+    let html = '<label style="margin-top:10px;color:#fff;font-weight:600;">Parcelas já pagas:</label><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;">';
+    for (let i = 1; i <= numParcelas; i++) {
+      const checked = parcelasPagas.includes(i) ? 'checked' : '';
+      html += `<label style='color:#fff;'><input type='checkbox' name='parcelas-pagas' value='${i}' style='margin-right:4px;' ${checked}>${i}ª</label>`;
+    }
+    html += '</div>';
+    parcelasPagasDiv.innerHTML = html;
+    parcelasPagasDiv.style.display = 'block';
+  } else {
+    parcelasPagasDiv.innerHTML = '';
+    parcelasPagasDiv.style.display = 'none';
+  }
+}
+
+// Atualizar checkboxes ao mudar número de parcelas ou tipo de pagamento
+function atualizarParcelasPagasUI() {
+  atualizarCheckboxParcelasPagas();
+}
+document.getElementById('tipo-pagamento').addEventListener('change', atualizarParcelasPagasUI);
+document.getElementById('numero-parcelas').addEventListener('change', atualizarParcelasPagasUI);
+
+// Ao editar, marcar as parcelas pagas corretas
+const urlParams = new URLSearchParams(window.location.search);
+const contaId = urlParams.get('id');
+if (contaId) {
+  const usuarioAtual = JSON.parse(localStorage.getItem('usuarioAtual'));
+  const chaveDados = `contas_${usuarioAtual.email}`;
+  const contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
+  const conta = contas.find(c => c.id === contaId);
+  if (conta && conta.tipoPagamento === 'parcelado' && conta.parcelas) {
+    const pagas = conta.parcelas
+      .map((p, idx) => p.status === 'pago' ? idx + 1 : null)
+      .filter(x => x !== null);
+    setTimeout(() => atualizarCheckboxParcelasPagas(pagas), 300);
+  }
+}
+
+// Ao salvar, coletar as parcelas pagas selecionadas
+const formNovaConta = document.getElementById('nova-conta-form');
+formNovaConta.addEventListener('submit', function(e) {
+  // ... existing code ...
+  const tipoPagamento = document.getElementById('tipo-pagamento').value;
+  const status = document.getElementById('status').value;
+  // ... existing code ...
+  const novaConta = {
+    id: contaId || Date.now().toString(), // Usar ID existente se estiver editando
+    nome: nome,
+    categoria: categoria,
+    valor: valor,
+    dataCompra: dataCompra,
+    tipoPagamento: tipoPagamento,
+    status: status,
+    parcelas: []
+  };
+  
+  if (tipoPagamento === 'parcelado') {
+    const numeroParcelas = parseInt(document.getElementById('numero-parcelas').value);
+    const valorParcela = valor / numeroParcelas;
+    const dataCompra = new Date(dataCompraInput.value);
+    // Coletar parcelas pagas
+    const checkboxes = document.querySelectorAll('input[name="parcelas-pagas"]:checked');
+    const pagasSelecionadas = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    for (let i = 0; i < numeroParcelas; i++) {
+      const dataVencimento = new Date(dataCompra);
+      dataVencimento.setMonth(dataCompra.getMonth() + i);
+      let statusParcela = pagasSelecionadas.includes(i + 1) ? 'pago' : 'pendente';
+      novaConta.parcelas.push({
+        numero: i + 1,
+        valor: valorParcela,
+        dataVencimento: dataVencimento.toISOString().split('T')[0],
+        status: statusParcela
+      });
+    }
+  } else {
+    // Para pagamento à vista, criar uma única "parcela"
+    const dataVencimento = new Date(dataCompra);
+    
+    novaConta.parcelas.push({
+      numero: 1,
+      valor: valor,
+      dataVencimento: dataVencimento.toISOString(),
+      status: status
+    });
+  }
+  
+  // Obter usuário atual
+  const usuarioAtual = JSON.parse(localStorage.getItem('usuarioAtual'));
+  
+  // Definir a chave correta para armazenar as contas do usuário
+  const chaveDados = `contas_${usuarioAtual.email}`;
+  
+  // Buscar contas existentes do usuário
+  let contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
+  
+  if (contaId) {
+    // Se estiver editando, encontrar e atualizar a conta existente
+    const contaIndex = contas.findIndex(c => c.id === contaId);
+    if (contaIndex !== -1) {
+      contas[contaIndex] = novaConta;
+    } else {
+      contas.push(novaConta);
+    }
+  } else {
+    // Se for nova conta, adicionar à lista
+    contas.push(novaConta);
+  }
+  
+  // Salvar no localStorage
+  localStorage.setItem(chaveDados, JSON.stringify(contas));
+  
+  alert('Conta salva com sucesso!');
+  window.location.href = 'contas.html';
 });

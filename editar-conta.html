@@ -4,20 +4,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MeuParcelado - Nova Conta</title>
+  <title>MeuParcelado - Editar Conta</title>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/forms.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
-
 <body style="margin: 0; padding: 0; background: linear-gradient(120deg, #1a1a1a, #2c3e50); background-size: cover; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-
   <header class="main-header" style="background-color: rgba(255,255,255,0.05); backdrop-filter: blur(10px); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;">
     <div class="logo-container">
       <img src="img/logo.png" alt="MeuParcelado Logo" class="logo" style="max-height: 40px;" />
     </div>
     <nav class="main-nav">
-      <ul>
+      <ul style="display: flex; gap: 1.5rem; list-style: none;">
         <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
         <li><a href="contas.html"><i class="fas fa-list"></i> Minhas Contas</a></li>
         <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
@@ -27,17 +25,17 @@
 
   <main class="container">
     <div class="form-container">
-      <h2 class="form-title"><i class="fas fa-plus-circle"></i> Adicionar Nova Conta</h2>
+      <h2 class="form-title"><i class="fas fa-edit"></i> Editar Conta</h2>
 
-      <form id="nova-conta-form">
+      <form id="editar-conta-form">
         <div class="form-row">
           <div class="form-group">
             <label for="nome">Nome da Conta <span class="required">*</span></label>
-            <input type="text" id="nome" name="nome" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;" required>
+            <input type="text" id="nome" name="nome" class="form-control" required>
           </div>
           <div class="form-group">
             <label for="categoria">Categoria <span class="required">*</span></label>
-            <select id="categoria" name="categoria" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;" required>
+            <select id="categoria" name="categoria" class="form-control" required>
               <option value="">Selecione uma categoria</option>
               <option value="moradia">Moradia</option>
               <option value="transporte">Transporte</option>
@@ -55,25 +53,25 @@
         <div class="form-row">
           <div class="form-group">
             <label for="valor">Valor Total (R$) <span class="required">*</span></label>
-            <input type="number" id="valor" name="valor" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;" step="0.01" min="0.01" required>
+            <input type="number" id="valor" name="valor" class="form-control" step="0.01" min="0.01" required>
           </div>
           <div class="form-group">
             <label for="data-compra">Data da Compra <span class="required">*</span></label>
-            <input type="date" id="data-compra" name="data-compra" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;" required>
+            <input type="date" id="data-compra" name="data-compra" class="form-control" required>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="tipo-pagamento">Tipo de Pagamento <span class="required">*</span></label>
-            <select id="tipo-pagamento" name="tipo-pagamento" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;" required>
+            <select id="tipo-pagamento" name="tipo-pagamento" class="form-control" required>
               <option value="avista">À Vista</option>
               <option value="parcelado">Parcelado</option>
             </select>
           </div>
           <div class="form-group" id="parcelas-group" style="display: none;">
             <label for="numero-parcelas">Número de Parcelas <span class="required">*</span></label>
-            <select id="numero-parcelas" name="numero-parcelas" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;">
+            <select id="numero-parcelas" name="numero-parcelas" class="form-control">
               <option value="2">2x</option>
               <option value="3">3x</option>
               <option value="4">4x</option>
@@ -86,13 +84,12 @@
               <option value="11">11x</option>
               <option value="12">12x</option>
             </select>
-            <div id="parcelas-pagas-div" style="display:none; margin-top:10px;"></div>
           </div>
         </div>
 
         <div class="form-group">
           <label for="status">Status <span class="required">*</span></label>
-          <select id="status" name="status" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;" required>
+          <select id="status" name="status" class="form-control" required>
             <option value="pendente">Pendente</option>
             <option value="pago">Pago</option>
           </select>
@@ -100,13 +97,13 @@
 
         <div class="form-actions">
           <a href="contas.html" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Cancelar</a>
-          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Conta</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Alterações</button>
         </div>
       </form>
     </div>
   </main>
 
   <script src="js/storage.js"></script>
-  <script src="js/nova-conta.js"></script>
+  <script src="js/editar-conta.js"></script>
 </body>
 </html>
