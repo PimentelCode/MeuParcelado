@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Relatório de Contas - MeuParcelado</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/modern-header.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body style="background: linear-gradient(120deg, #1a1a1a, #2c3e50);">
+  <header class="main-header">
+    <div class="logo-container">
+      <img src="img/logo.png" alt="MeuParcelado Logo" />
+    </div>
+    <nav class="main-nav">
+      <ul>
+        <li><a href="inicio.html"><i class="fas fa-home"></i> <span class="nav-text">Início</span></a></li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span class="nav-text">Dashboard</span></a></li>
+        <li><a href="contas.html"><i class="fas fa-credit-card"></i> <span class="nav-text">Minhas Contas</span></a></li>
+        <li><a href="relatorio.html" class="active"><i class="fas fa-chart-bar"></i> <span class="nav-text">Relatórios</span></a></li>
+        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Sair</span></a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="page-header">
+      <h1>Relatório de Contas</h1>
+      <div class="actions">
+        <button id="exportar-pdf" class="btn btn-primary">
+          <i class="fas fa-file-export"></i> Exportar para PDF
+        </button>
+        <button id="filtrar-status" class="btn btn-secondary">
+          <i class="fas fa-filter"></i> Filtrar por Status
+        </button>
+      </div>
+    </section>
+
+    <div class="report-container" style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 10px; backdrop-filter: blur(10px);">
+      <table id="relatorio-tabela" class="table">
+        <thead>
+          <tr>
+            <th>Nome da Conta</th>
+            <th>Categoria</th>
+            <th>Valor (R$)</th>
+            <th>Data de Compra</th>
+            <th>Status</th>
+            <th>Tipo</th>
+            <th>Parcelas Pagas</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-relatorio">
+          <!-- Preenchido via JavaScript -->
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2"><strong>Total:</strong></td>
+            <td id="total-valor" colspan="5"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    // Função para formatar moeda
+    const formatarMoeda = (valor) => {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(valor);
+    };
+
+    // Função para formatar data
+    const formatarData = (data) => {
+      return new Date(data).toLocaleDateString('pt-BR');
+    };
+
+    // Carregar e exibir contas
+    const carregarContas = () => {
+      const usuarioAtual = JSON.parse(localStorage.getItem('usuarioAtual'));
+      if (!usuarioAtual) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const chaveDados = `contas_${usuarioAtual.email}`;
+      const contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
+      const tbody = document.getElementById('corpo-relatorio');
+      tbody.innerHTML = '';
+
+      let totalValor = 0;
+
+      contas.forEach(conta => {
+        const tr = document.createElement('tr');
+        
+        // Calcular parcelas pagas para contas parceladas
+        let parcelasPagas = '';
+        if (conta.tipoPagamento === 'parcelado' && conta.parcelas) {
+          const pagas = conta.parcelas.filter(p => p.status === 'pago').length;
+          const total = conta.parcelas.length;
+          parcelasPagas = `${pagas}/${total}`;
+        }
+
+        totalValor += Number(conta.valor);
+
+        tr.innerHTML = `
+          <td>${conta.nome}</td>
+          <td>${conta.categoria || 'N/A'}</td>
+          <td>${formatarMoeda(conta.valor)}</td>
+          <td>${formatarData(conta.dataCompra)}</td>
+          <td><span class="status-tag ${conta.status}">${conta.status}</span></td>
+          <td>${conta.tipoPagamento || 'única'}</td>
+          <td>${parcelasPagas || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('total-valor').textContent = formatarMoeda(totalValor);
+    };
+
+    // Gerar PDF
+    document.getElementById('exportar-pdf').addEventListener('click', () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Configurar fonte e tamanho
+      doc.setFont('helvetica');
+      doc.setFontSize(16);
+
+      // Adicionar cabeçalho
+      doc.text('MeuParcelado - Relatório de Contas', 14, 20);
+      doc.setFontSize(10);
+      doc.text(`Data de exportação: ${new Date().toLocaleDateString('pt-BR')}`, 14, 30);
+
+      // Configurar tabela
+      doc.autoTable({
+        html: '#relatorio-tabela',
+        startY: 35,
+        styles: { fontSize: 8 },
+        headStyles: { 
+          fillColor: [0, 184, 148],
+          textColor: [255, 255, 255]
+        },
+        footStyles: {
+          fillColor: [240, 240, 240],
+          textColor: [0, 0, 0],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245]
+        },
+        margin: { top: 35 }
+      });
+
+      // Adicionar rodapé
+      const pageCount = doc.internal.getNumberOfPages();
+      for(let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.text(
+          `Página ${i} de ${pageCount}`,
+          doc.internal.pageSize.width - 20,
+          doc.internal.pageSize.height - 10
+        );
+      }
+
+      // Salvar PDF
+      doc.save('relatorio-contas.pdf');
+    });
+
+    // Inicializar página
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarContas();
+    });
+
+    // Configurar logout
+    document.getElementById('logout-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('usuarioAtual');
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+</html>

@@ -7,18 +7,21 @@
   <title>MeuParcelado - Editar Conta</title>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/forms.css" />
+  <link rel="stylesheet" href="css/modern-header.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body style="margin: 0; padding: 0; background: linear-gradient(120deg, #1a1a1a, #2c3e50); background-size: cover; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-  <header class="main-header" style="background-color: rgba(255,255,255,0.05); backdrop-filter: blur(10px); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+  <header class="main-header">
     <div class="logo-container">
-      <img src="img/logo.png" alt="MeuParcelado Logo" class="logo" style="max-height: 40px;" />
+      <img src="img/logo.png" alt="MeuParcelado Logo" />
     </div>
     <nav class="main-nav">
-      <ul style="display: flex; gap: 1.5rem; list-style: none;">
-        <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
-        <li><a href="contas.html"><i class="fas fa-list"></i> Minhas Contas</a></li>
-        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+      <ul>
+        <li><a href="inicio.html"><i class="fas fa-home"></i> <span class="nav-text">Início</span></a></li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span class="nav-text">Dashboard</span></a></li>
+        <li><a href="contas.html"><i class="fas fa-credit-card"></i> <span class="nav-text">Minhas Contas</span></a></li>
+        <li><a href="relatorio.html"><i class="fas fa-chart-bar"></i> <span class="nav-text">Relatórios</span></a></li>
+        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Sair</span></a></li>
       </ul>
     </nav>
   </header>

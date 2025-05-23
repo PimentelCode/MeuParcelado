@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MeuParcelado - Dashboard</title>
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/modern-header.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     :root {
@@ -23,31 +24,9 @@
       min-height: 100vh;
     }
 
-    header.main-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 2rem;
-      background-color: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .logo-container img {
-      max-height: 40px;
-    }
-
-    nav.main-nav ul {
-      list-style: none;
-      display: flex;
-      gap: 1.5rem;
-      margin: 0;
-      padding: 0;
-    }
-
+    /* Header styles moved to modern-header.css */
+    
     nav.main-nav a {
-      color: #fff;
-      text-decoration: none;
       font-weight: 500;
     }
 
@@ -126,13 +105,15 @@
 <body>
   <header class="main-header">
     <div class="logo-container">
-      <img src="img/logo.png" alt="MeuParcelado Logo" class="logo-small" />
+      <img src="img/logo.png" alt="MeuParcelado Logo" />
     </div>
     <nav class="main-nav">
       <ul>
-        <li><a href="dashboard.html" class="active">Dashboard</a></li>
-        <li><a href="contas.html">Minhas Contas</a></li>
-        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+        <li><a href="inicio.html"><i class="fas fa-home"></i> <span class="nav-text">Início</span></a></li>
+        <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> <span class="nav-text">Dashboard</span></a></li>
+        <li><a href="contas.html"><i class="fas fa-credit-card"></i> <span class="nav-text">Minhas Contas</span></a></li>
+        <li><a href="relatorio.html"><i class="fas fa-chart-bar"></i> <span class="nav-text">Relatórios</span></a></li>
+        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Sair</span></a></li>
       </ul>
     </nav>
   </header>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MeuParcelado - Início</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/modern-header.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(120deg, #1a1a1a, #2c3e50);
+      color: #fff;
+      min-height: 100vh;
+    }
+    
+    .main-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 80px);
+      padding: 2rem;
+    }
+
+    .intro-container {
+      text-align: center;
+      padding: 2rem;
+      background-color: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      max-width: 600px;
+      margin: 1rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .intro-logo {
+      max-width: 120px;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--primary, #00b894);
+    }
+
+    p.description {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      color: #ccc;
+    }
+
+    ul.features {
+      list-style: none;
+      padding: 0;
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+
+    ul.features li {
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
+
+    ul.features li i {
+      color: var(--primary, #00b894);
+      margin-right: 8px;
+    }
+
+    .btn-start {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--primary, #00b894);
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-start:hover {
+      background-color: #009f7f;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .intro-container {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="main-header">
+    <div class="logo-container">
+      <img src="img/logo.png" alt="MeuParcelado Logo" />
+    </div>
+    <nav class="main-nav">
+      <ul>
+        <li><a href="inicio.html" class="active"><i class="fas fa-home"></i> <span class="nav-text">Início</span></a></li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span class="nav-text">Dashboard</span></a></li>
+        <li><a href="contas.html"><i class="fas fa-credit-card"></i> <span class="nav-text">Minhas Contas</span></a></li>
+        <li><a href="relatorio.html"><i class="fas fa-chart-bar"></i> <span class="nav-text">Relatórios</span></a></li>
+        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Sair</span></a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="main-content">
+  <div class="intro-container">
+    <img src="img/logo.png" alt="Logo MeuParcelado" class="intro-logo" />
+    <h1>Controle suas contas parceladas com facilidade</h1>
+    <p class="description">
+      O MeuParcelado ajuda você a organizar, visualizar e acompanhar todas as suas contas, parcelas e pagamentos.
+    </p>
+    <ul class="features">
+      <li><i class="fas fa-file-invoice-dollar"></i> Cadastre contas e escolha tipo de pagamento</li>
+      <li><i class="fas fa-chart-pie"></i> Veja relatórios e gráficos no dashboard</li>
+      <li><i class="fas fa-filter"></i> Use filtros e buscas para encontrar contas rapidamente</li>
+      <li><i class="fas fa-download"></i> Exporte relatórios em PDF</li>
+    </ul>
+    <a href="index.html" class="btn-start"><i class="fas fa-sign-in-alt"></i> Começar agora</a>
+  </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>
