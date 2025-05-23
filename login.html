@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - MeuParcelado</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/modern-header.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <header class="main-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <img src="img/logo.png" alt="Logo MeuParcelado" />
+          <span>MeuParcelado</span>
+        </div>
+        
+        <button class="hamburger-menu" id="hamburger-menu" aria-label="Menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        
+        <nav class="main-nav" id="main-nav">
+          <ul>
+            <li><a href="/"><i class="fas fa-home"></i> Início</a></li>
+            <li><a href="/login.html" class="active"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+            <li><a href="/cadastro.html"><i class="fas fa-user-plus"></i> Cadastro</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+  
+  <div class="mobile-overlay" id="mobile-overlay"></div>
+
+  <div class="login-container">
+    <div class="login-form">
+      <div class="form-header">
+        <img src="img/logo.png" alt="Logo MeuParcelado" class="form-logo" />
+        <h1>Entrar</h1>
+        <p>Acesse sua conta para gerenciar suas compras parceladas</p>
+      </div>
+      
+      <form id="login-form">
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        
+        <button type="submit" class="btn-login">
+          <i class="fas fa-sign-in-alt"></i> Entrar
+        </button>
+      </form>
+      
+      <div class="form-footer">
+        <p>Não tem uma conta? <a href="/cadastro.html">Cadastre-se aqui</a></p>
+        <p><a href="/">← Voltar ao início</a></p>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .login-container {
+      min-height: calc(100vh - 80px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      margin-top: 80px;
+    }
+
+    .login-form {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 2.5rem;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .form-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .form-logo {
+      max-width: 80px;
+      margin-bottom: 1rem;
+    }
+
+    .form-header h1 {
+      color: var(--primary, #00b894);
+      margin-bottom: 0.5rem;
+      font-size: 2rem;
+    }
+
+    .form-header p {
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      color: #fff;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary, #00b894);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .form-group input::placeholder {
+      color: #aaa;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 0.8rem;
+      background: linear-gradient(135deg, #00b894, #00a085);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-login:hover {
+      background: linear-gradient(135deg, #00a085, #008f75);
+      transform: translateY(-2px);
+    }
+
+    .form-footer {
+      text-align: center;
+    }
+
+    .form-footer p {
+      color: #ccc;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .form-footer a {
+      color: var(--primary, #00b894);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .form-footer a:hover {
+      color: #00a085;
+    }
+
+    @media (max-width: 480px) {
+      .login-form {
+        padding: 2rem 1.5rem;
+      }
+      
+      .form-header h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      // Simple validation for demo purposes
+      if (email && password) {
+        // Store user session
+        localStorage.setItem('usuarioAtual', JSON.stringify({
+          email: email,
+          nome: email.split('@')[0],
+          loggedIn: true
+        }));
+        
+        // Redirect to dashboard
+        window.location.href = '/dashboard/';
+      } else {
+        alert('Por favor, preencha todos os campos.');
+      }
+    });
+  </script>
+
+  <script src="js/mobile-menu.js"></script>
+</body>
+</html>

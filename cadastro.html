@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MeuParcelado - Cadastro</title>
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/modern-header.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     :root {
@@ -17,14 +18,20 @@
     body, html {
       margin: 0;
       padding: 0;
-      height: 100%;
+      min-height: 100%;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(120deg, #1a1a1a, #2c3e50);
       background-size: cover;
       background-attachment: fixed;
+    }
+
+    .page-content {
       display: flex;
       align-items: center;
       justify-content: center;
+      min-height: calc(100vh - 80px);
+      padding: 2rem 1rem;
+      margin-top: 80px;
     }
 
     .cadastro-container {
@@ -169,7 +176,34 @@
   </style>
 </head>
 <body>
-  <div class="cadastro-container">
+  <header class="main-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <img src="img/logo.png" alt="Logo MeuParcelado" />
+          <span>MeuParcelado</span>
+        </div>
+        
+        <button class="hamburger-menu" id="hamburger-menu" aria-label="Menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        
+        <nav class="main-nav" id="main-nav">
+          <ul>
+            <li><a href="/"><i class="fas fa-home"></i> Início</a></li>
+            <li><a href="/login.html"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+            <li><a href="/cadastro.html" class="active"><i class="fas fa-user-plus"></i> Cadastro</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+  
+  <div class="mobile-overlay" id="mobile-overlay"></div>
+  <div class="page-content">
+    <div class="cadastro-container">
     <img src="img/logo.png" alt="MeuParcelado Logo" class="logo"/>
 
     <div id="cadastro-message" class="alert" style="display: none;"></div>
@@ -229,9 +263,11 @@
         Já tem uma conta? <a href="index.html">Faça login</a>
       </div>
     </form>
+    </div>
   </div>
 
   <script src="js/storage.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/mobile-menu.js"></script>
 </body>
 </html>
