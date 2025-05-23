@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/modern-header.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --primary: #00b894;
@@ -95,9 +96,57 @@
       color: #aaa;
     }
 
+    .charts-section {
+      margin-top: 3rem;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .chart-container {
+      background-color: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    .chart-title {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      color: #fff;
+    }
+
+    .chart-canvas {
+      max-height: 300px;
+    }
+
+    @media (max-width: 768px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .chart-container {
+        padding: 1.5rem;
+      }
+    }
+
     @media (max-width: 480px) {
       .dashboard-title {
         font-size: 1.5rem;
+      }
+      
+      .charts-section {
+        margin-top: 2rem;
+      }
+      
+      .chart-container {
+        padding: 1rem;
       }
     }
   </style>
@@ -142,6 +191,20 @@
         <span class="card-value" id="contas-pendentes">0</span>
       </div>
     </div>
+
+    <section class="charts-section">
+      <h2 class="dashboard-title">Análise Visual</h2>
+      <div class="charts-grid">
+        <div class="chart-container">
+          <h3 class="chart-title">Status das Contas</h3>
+          <canvas id="statusChart" class="chart-canvas"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3 class="chart-title">Gastos por Categoria</h3>
+          <canvas id="categoryChart" class="chart-canvas"></canvas>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="main-footer">
