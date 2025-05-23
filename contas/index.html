@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MeuParcelado - Minhas Contas</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/modern-header.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #00b894;
+      --primary-light: #1dd1a1;
+      --primary-dark: #00a383;
+      --danger: #e74c3c;
+      --success: #2ecc71;
+      --background-glass: rgba(255, 255, 255, 0.05);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(120deg, #1a1a1a, #2c3e50);
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    /* Header styles moved to modern-header.css */
+    
+    nav.main-nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    nav.main-nav a.active {
+      color: var(--primary);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .page-header h2 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    .total-mes-atual {
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      color: #ccc;
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #00a383;
+    }
+
+    .filter-section {
+      background: var(--background-glass);
+      padding: 1rem;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: space-between;
+    }
+
+    .filter-container {
+      flex: 1 1 200px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 0.9rem;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 184, 148, 0.2);
+    }
+
+    .search-container {
+      display: flex;
+      gap: 0.5rem;
+      align-items: end;
+      flex: 1 1 300px;
+    }
+
+    .search-container input {
+      flex: 1;
+    }
+
+    .btn-secondary {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Cards de contas responsivos */
+    .cards-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      justify-content: flex-start;
+      margin-top: 1rem;
+    }
+
+    .card-conta {
+      background: var(--background-glass);
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      padding: 1.2rem 1rem 1rem 1rem;
+      min-width: 260px;
+      max-width: 100%;
+      flex: 1 1 320px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .card-conta:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.8rem;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      margin: 0;
+      flex: 1;
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      margin-left: 0.5rem;
+    }
+
+    .status-badge.pago {
+      background: rgba(46, 204, 113, 0.2);
+      color: #2ecc71;
+      border: 1px solid #2ecc71;
+    }
+
+    .status-badge.pendente {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+      border: 1px solid #e74c3c;
+    }
+
+    .card-info {
+      margin-bottom: 1rem;
+    }
+
+    .card-info p {
+      margin: 0.3rem 0;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+
+    .card-info strong {
+      color: #fff;
+    }
+
+    .card-valor {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-small {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+      min-width: 70px;
+      text-align: center;
+    }
+
+    .btn-success {
+      background-color: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: #27ae60;
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #c0392b;
+    }
+
+    .btn-warning {
+      background-color: #f39c12;
+      color: white;
+    }
+
+    .btn-warning:hover {
+      background-color: #e67e22;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #ccc;
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      color: #666;
+    }
+
+    .empty-state h3 {
+      margin-bottom: 0.5rem;
+      color: #999;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .filter-section {
+        flex-direction: column;
+      }
+      
+      .search-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .cards-container {
+        justify-content: center;
+      }
+      
+      .card-conta {
+        min-width: 280px;
+        flex: 1 1 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 0 0.5rem;
+      }
+      
+      .filter-section {
+        padding: 0.5rem 0.3rem;
+        margin-bottom: 0.7rem;
+      }
+      .filter-container {
+        width: 100%;
+        margin-bottom: 0.2rem;
+      }
+      .filter-section label,
+      .filter-section select,
+      .filter-section input {
+        font-size: 0.93rem;
+      }
+      .search-container {
+        flex-direction: column;
+        gap: 0.2rem;
+        margin-top: 0.2rem;
+      }
+      .form-control {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.93rem;
+        min-height: 32px;
+      }
+      .filter-section .form-control {
+        margin-bottom: 0.2rem;
+      }
+      .filter-section {
+        min-width: unset;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">
+    <div class="logo-container">
+      <img src="../img/logo.png" alt="MeuParcelado Logo" />
+    </div>
+    <button class="hamburger-menu" id="hamburger-menu" aria-label="Menu">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+    <nav class="main-nav" id="main-nav">
+      <ul>
+        <li><a href="/"><i class="fas fa-home"></i> <span class="nav-text">Início</span></a></li>
+        <li><a href="/dashboard"><i class="fas fa-tachometer-alt"></i> <span class="nav-text">Dashboard</span></a></li>
+        <li><a href="/contas" class="active"><i class="fas fa-credit-card"></i> <span class="nav-text">Minhas Contas</span></a></li>
+        <li><a href="/relatorio"><i class="fas fa-chart-bar"></i> <span class="nav-text">Relatórios</span></a></li>
+        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Sair</span></a></li>
+      </ul>
+    </nav>
+  </header>
+  <div class="mobile-overlay" id="mobile-overlay"></div>
+
+  <main class="container">
+    <section class="page-header">
+      <div>
+        <h2>Minhas Contas</h2>
+        <div class="total-mes-atual">
+          <i class="fas fa-calendar-alt"></i>
+          Total a pagar no mês atual: <span id="valor-mes-atual">R$ 0,00</span>
+        </div>
+      </div>
+      <a href="/nova-conta" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nova Conta
+      </a>
+    </section>
+
+    <section class="filter-section">
+      <div class="filter-container">
+        <label for="filtro-status">Status:</label>
+        <select id="filtro-status" class="form-control">
+          <option value="">Todos</option>
+          <option value="pago">Pago</option>
+          <option value="pendente">Pendente</option>
+        </select>
+      </div>
+      
+      <div class="filter-container">
+        <label for="filtro-categoria">Categoria:</label>
+        <select id="filtro-categoria" class="form-control">
+          <option value="">Todas</option>
+          <option value="moradia">Moradia</option>
+          <option value="transporte">Transporte</option>
+          <option value="alimentacao">Alimentação</option>
+          <option value="saude">Saúde</option>
+          <option value="educacao">Educação</option>
+          <option value="lazer">Lazer</option>
+          <option value="outros">Outros</option>
+        </select>
+      </div>
+      
+      <div class="search-container">
+        <div style="flex: 1;">
+          <label for="busca-conta">Buscar:</label>
+          <input type="text" id="busca-conta" class="form-control" placeholder="Nome da conta...">
+        </div>
+        <button type="button" id="limpar-filtros" class="btn btn-secondary">
+          <i class="fas fa-times"></i> Limpar
+        </button>
+      </div>
+    </section>
+
+    <section id="contas-container" class="cards-container">
+      <!-- Contas serão carregadas aqui via JavaScript -->
+    </section>
+
+    <div id="empty-state" class="empty-state" style="display: none;">
+      <i class="fas fa-credit-card"></i>
+      <h3>Nenhuma conta encontrada</h3>
+      <p>Adicione sua primeira conta ou ajuste os filtros de busca.</p>
+    </div>
+  </main>
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/contas.js"></script>
+  <script src="../js/mobile-menu.js"></script>
+</body>
+</html>

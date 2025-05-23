@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MeuParcelado - Dashboard</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/modern-header.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/modern-header.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -57,45 +57,40 @@
       backdrop-filter: blur(10px);
       padding: 1.5rem;
       border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      transition: transform 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      transition: all 0.3s ease;
     }
 
     .card:hover {
-      transform: scale(1.02);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
 
     .card i {
-      font-size: 1.8rem;
-      margin-bottom: 0.8rem;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
     }
 
+    .card.total i { color: var(--primary); }
+    .card.mes i { color: var(--warning); }
+    .card.pagas i { color: var(--success); }
+    .card.pendentes i { color: var(--danger); }
+
     .card-label {
-      font-size: 1rem;
+      display: block;
+      font-size: 0.9rem;
       color: #ccc;
+      margin-bottom: 0.5rem;
     }
 
     .card-value {
-      font-size: 1.6rem;
+      display: block;
+      font-size: 1.8rem;
       font-weight: bold;
-      margin-top: 0.2rem;
     }
 
-    .card.total       i { color: #00cec9; }
-    .card.mes         i { color: #0984e3; }
-    .card.pagas       i { color: var(--success); }
-    .card.pendentes   i { color: var(--danger); }
-
-    footer.main-footer {
-      text-align: center;
-      padding: 2rem 1rem 1rem;
-      font-size: 0.9rem;
-      color: #aaa;
-    }
-
+    /* Charts Section */
     .charts-section {
       margin-top: 3rem;
     }
@@ -112,7 +107,7 @@
       backdrop-filter: blur(10px);
       padding: 2rem;
       border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .chart-title {
@@ -154,7 +149,7 @@
 <body>
   <header class="main-header">
     <div class="logo-container">
-      <img src="img/logo.png" alt="MeuParcelado Logo" />
+      <img src="../img/logo.png" alt="MeuParcelado Logo" />
     </div>
     <button class="hamburger-menu" id="hamburger-menu" aria-label="Menu">
       <span class="hamburger-line"></span>
@@ -213,13 +208,9 @@
     </section>
   </main>
 
-  <footer class="main-footer">
-    &copy; 2025 MeuParcelado - Controle suas contas parceladas
-  </footer>
-
-  <script src="js/storage.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/dashboard.js"></script>
-  <script src="js/mobile-menu.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/dashboard.js"></script>
+  <script src="../js/mobile-menu.js"></script>
 </body>
 </html>

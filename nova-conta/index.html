@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MeuParcelado - Nova Conta</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/forms.css" />
+  <link rel="stylesheet" href="../css/modern-header.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+
+<body style="margin: 0; padding: 0; background: linear-gradient(120deg, #1a1a1a, #2c3e50); background-size: cover; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+
+  <header class="main-header">
+    <div class="logo-container">
+      <img src="../img/logo.png" alt="MeuParcelado Logo" />
+    </div>
+    <button class="hamburger-menu" id="hamburger-menu" aria-label="Menu">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+    <nav class="main-nav" id="main-nav">
+      <ul>
+        <li><a href="/"><i class="fas fa-home"></i> <span class="nav-text">Início</span></a></li>
+        <li><a href="/dashboard"><i class="fas fa-tachometer-alt"></i> <span class="nav-text">Dashboard</span></a></li>
+        <li><a href="/contas"><i class="fas fa-credit-card"></i> <span class="nav-text">Minhas Contas</span></a></li>
+        <li><a href="/relatorio"><i class="fas fa-chart-bar"></i> <span class="nav-text">Relatórios</span></a></li>
+        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Sair</span></a></li>
+      </ul>
+    </nav>
+  </header>
+  <div class="mobile-overlay" id="mobile-overlay"></div>
+
+  <main class="container">
+    <div class="form-container">
+      <h2 class="form-title"><i class="fas fa-plus-circle"></i> Adicionar Nova Conta</h2>
+
+      <form id="nova-conta-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nome">Nome da Conta <span class="required">*</span></label>
+            <input type="text" id="nome" name="nome" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;" required>
+          </div>
+          <div class="form-group">
+            <label for="categoria">Categoria <span class="required">*</span></label>
+            <select id="categoria" name="categoria" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;" required>
+              <option value="">Selecione uma categoria</option>
+              <option value="moradia">Moradia</option>
+              <option value="transporte">Transporte</option>
+              <option value="alimentacao">Alimentação</option>
+              <option value="saude">Saúde</option>
+              <option value="educacao">Educação</option>
+              <option value="lazer">Lazer</option>
+              <option value="servicos">Serviços</option>
+              <option value="compras">Compras</option>
+              <option value="outros">Outros</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="valor">Valor Total (R$) <span class="required">*</span></label>
+            <input type="number" id="valor" name="valor" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;" step="0.01" min="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="data-compra">Data da Compra <span class="required">*</span></label>
+            <input type="date" id="data-compra" name="data-compra" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tipo-pagamento">Tipo de Pagamento <span class="required">*</span></label>
+            <select id="tipo-pagamento" name="tipo-pagamento" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;" required>
+              <option value="avista">À Vista</option>
+              <option value="parcelado">Parcelado</option>
+            </select>
+          </div>
+          <div class="form-group" id="parcelas-group" style="display: none;">
+            <label for="numero-parcelas">Número de Parcelas <span class="required">*</span></label>
+            <select id="numero-parcelas" name="numero-parcelas" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;">
+              <option value="2">2x</option>
+              <option value="3">3x</option>
+              <option value="4">4x</option>
+              <option value="5">5x</option>
+              <option value="6">6x</option>
+              <option value="7">7x</option>
+              <option value="8">8x</option>
+              <option value="9">9x</option>
+              <option value="10">10x</option>
+              <option value="11">11x</option>
+              <option value="12">12x</option>
+            </select>
+            <div id="parcelas-pagas-div" style="display:none; margin-top:10px;"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="status">Status <span class="required">*</span></label>
+          <select id="status" name="status" class="form-control" style="background-color: rgba(255,255,255,0.1); color: white; border: none; border-radius: 8px; padding: 10px;" required>
+            <option value="pendente">Pendente</option>
+            <option value="pago">Pago</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Salvar Conta
+          </button>
+          <a href="/contas" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Cancelar
+          </a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/nova-conta.js"></script>
+  <script src="../js/mobile-menu.js"></script>
+</body>
+</html>
