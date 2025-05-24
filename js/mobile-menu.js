@@ -74,10 +74,9 @@ class MobileMenu {
     // Focus management for accessibility
     this.hamburgerMenu.setAttribute('aria-expanded', 'false');
   }
-}
 
   setupAuthNavigation() {
-    const usuarioAtual = localStorage.getItem('usuarioAtual');
+    const usuarioAtual = storage.getItem('usuarioAtual');
     this.isLoggedIn = !!usuarioAtual;
     
     const navHtml = this.isLoggedIn ? `
@@ -102,7 +101,7 @@ class MobileMenu {
   }
 
   handleLogout() {
-    localStorage.removeItem('usuarioAtual');
+    storage.removeItem('usuarioAtual');
     window.location.href = '/inicio.html';
   }
 }

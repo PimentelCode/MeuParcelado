@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar autenticação
     const usuarioAtual = storage.getItem('usuarioAtual');
     if (!usuarioAtual) {
-        window.location.href = 'index.html';
+        window.location.href = '/inicio.html';
         return;
     }
     
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('logout-btn').addEventListener('click', function(e) {
         e.preventDefault();
         storage.removeItem('usuarioAtual');
-        window.location.href = 'index.html';
+        window.location.href = '/inicio.html';
     });
 });
 
