@@ -8,19 +8,17 @@
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/modern-header.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Supabase Dependencies -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/supabase-storage.js"></script>
+  
+  <!-- External Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  
+  <!-- Application Scripts -->
   <script src="js/storage.js"></script>
-  <script>
-    // Verificar autenticação
-    document.addEventListener('DOMContentLoaded', function() {
-      const usuarioAtual = storage.getItem('usuarioAtual');
-      if (!usuarioAtual) {
-        window.location.href = '/inicio.html';
-        return;
-      }
-    });
-  </script>
   <style>
     /* Mobile-first responsive styles */
     body {
@@ -417,14 +415,50 @@
 
     // Inicializar página
     document.addEventListener('DOMContentLoaded', () => {
-      carregarContas();
     });
 
+    // Verificar autenticação
+    async function verificarAutenticacao() {
+      try {
+        const usuarioAtual = await supabaseStorage.obterUsuarioAtual();
+        if (!usuarioAtual) {
+          // Fallback para localStorage
+          const usuarioLocal = JSON.parse(localStorage.getItem('usuarioAtual'));
+          if (!usuarioLocal) {
+            window.location.href = 'index.html';
+            return false;
+          }
+        }
+        return true;
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+        const usuarioLocal = JSON.parse(localStorage.getItem('usuarioAtual'));
+        if (!usuarioLocal) {
+          window.location.href = 'index.html';
+          return false;
+        }
+        return true;
+      }
+    }
+
     // Configurar logout
-    document.getElementById('logout-btn').addEventListener('click', (e) => {
+    document.getElementById('logout-btn').addEventListener('click', async (e) => {
       e.preventDefault();
-      localStorage.removeItem('usuarioAtual');
+      try {
+        await supabaseStorage.logout();
+      } catch (error) {
+        console.error('Erro no logout do Supabase:', error);
+        localStorage.removeItem('usuarioAtual');
+      }
       window.location.href = 'index.html';
+    });
+
+    // Verificar autenticação ao carregar a página
+    document.addEventListener('DOMContentLoaded', async function() {
+      const autenticado = await verificarAutenticacao();
+      if (autenticado) {
+        carregarContas();
+      }
     });
   </script>
 </body>

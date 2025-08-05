@@ -40,31 +40,62 @@ document.addEventListener('DOMContentLoaded', function () {
       return true;
     }
   
-    loginForm.addEventListener('submit', function (e) {
+    loginForm.addEventListener('submit', async function (e) {
       e.preventDefault();
       if (!validateEmail() || !validatePassword()) return;
   
       const email = emailInput.value;
       const senha = passwordInput.value;
-  
-      // Usar a biblioteca storage para obter os usuários
-      const usuarios = storage.getItem('usuarios') || [];
-      const usuario = usuarios.find(u => u.email === email && u.senha === senha);
       
-      // Para debug - verificar se os usuários estão sendo encontrados
-      console.log('Usuários cadastrados:', usuarios);
-      console.log('Tentativa de login com:', email);
-  
-      if (usuario) {
-        storage.setItem('usuarioAtual', usuario);
-        document.querySelector('.login-container').style.opacity = '0';
-        document.querySelector('.login-container').style.transform = 'translateY(-10px)';
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 300);
-      } else {
-        loginError.style.display = 'block';
-        setTimeout(() => loginError.style.display = 'none', 5000);
+      // Desabilitar botão durante o processo
+      const loginButton = loginForm.querySelector('button[type="submit"]');
+      const originalText = loginButton.textContent;
+      loginButton.disabled = true;
+      loginButton.textContent = 'Entrando...';
+      
+      try {
+        // Buscar usuário no Supabase
+        const usuario = await supabaseStorage.buscarUsuario(email);
+        
+        console.log('Tentativa de login com:', email);
+        
+        if (usuario && usuario.senha === senha) {
+          // Salvar usuário atual no storage (mantém compatibilidade)
+          supabaseStorage.setItem('usuarioAtual', usuario);
+          
+          document.querySelector('.login-container').style.opacity = '0';
+          document.querySelector('.login-container').style.transform = 'translateY(-10px)';
+          
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 300);
+        } else {
+          loginError.style.display = 'block';
+          setTimeout(() => loginError.style.display = 'none', 5000);
+        }
+      } catch (error) {
+        console.error('Erro ao fazer login:', error);
+        
+        // Fallback para localStorage
+        console.warn('Usando localStorage como fallback');
+        const usuarios = storage.getItem('usuarios') || [];
+        const usuario = usuarios.find(u => u.email === email && u.senha === senha);
+        
+        if (usuario) {
+          storage.setItem('usuarioAtual', usuario);
+          document.querySelector('.login-container').style.opacity = '0';
+          document.querySelector('.login-container').style.transform = 'translateY(-10px)';
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 300);
+        } else {
+          loginError.style.display = 'block';
+          setTimeout(() => loginError.style.display = 'none', 5000);
+        }
+      } finally {
+        // Reabilitar botão
+        loginButton.disabled = false;
+        loginButton.textContent = originalText;
       }
     });
   

@@ -1,7 +1,7 @@
 // Inicialização da página de contas
 document.addEventListener('DOMContentLoaded', function() {
     // Verificar autenticação
-    const usuarioAtual = storage.getItem('usuarioAtual');
+    const usuarioAtual = supabaseStorage.getItem('usuarioAtual') || storage.getItem('usuarioAtual');
     if (!usuarioAtual) {
         window.location.href = '/inicio.html';
         return;
@@ -32,28 +32,54 @@ document.addEventListener('DOMContentLoaded', function() {
     // Configurar evento de logout
     document.getElementById('logout-btn').addEventListener('click', function(e) {
         e.preventDefault();
+        supabaseStorage.removeItem('usuarioAtual');
         storage.removeItem('usuarioAtual');
         window.location.href = '/inicio.html';
     });
 });
 
 // Função para carregar as contas do usuário
-function carregarContas() {
-    // Buscar contas do usuário
-    const contas = storage.getContas();
-    const filtro = document.getElementById('filter').value;
-    const mesFiltro = document.getElementById('month-filter').value;
-    const termoBusca = document.getElementById('search').value.toLowerCase();
-    
+async function carregarContas() {
+    try {
+        // Buscar contas do usuário no Supabase
+        const usuarioAtual = supabaseStorage.getItem('usuarioAtual') || storage.getItem('usuarioAtual');
+        const contas = await supabaseStorage.buscarContas(usuarioAtual.email);
+        
+        const filtro = document.getElementById('filter').value;
+        const mesFiltro = document.getElementById('month-filter').value;
+        const termoBusca = document.getElementById('search').value.toLowerCase();
+        
+        let contasFiltradas = contas;
+        
+        processarFiltros(contasFiltradas, filtro, mesFiltro, termoBusca);
+        
+    } catch (error) {
+        console.error('Erro ao carregar contas do Supabase:', error);
+        
+        // Fallback para localStorage
+        console.warn('Usando localStorage como fallback');
+        const contas = storage.getContas();
+        const filtro = document.getElementById('filter').value;
+        const mesFiltro = document.getElementById('month-filter').value;
+        const termoBusca = document.getElementById('search').value.toLowerCase();
+        
+        let contasFiltradas = contas;
+        
+        processarFiltros(contasFiltradas, filtro, mesFiltro, termoBusca);
+    }
+}
+
+// Função auxiliar para processar filtros
+function processarFiltros(contas, filtro, mesFiltro, termoBusca) {
     let contasFiltradas = contas;
     
     // Aplicar filtro de status
     if (filtro === 'mes-atual') {
-        contasFiltradas = filtrarContasMesAtual(contas);
+        contasFiltradas = filtrarContasMesAtual(contasFiltradas);
     } else if (filtro === 'pendentes') {
-        contasFiltradas = contas.filter(conta => !todasParcelasPagas(conta));
+        contasFiltradas = contasFiltradas.filter(conta => !todasParcelasPagas(conta));
     } else if (filtro === 'pagas') {
-        contasFiltradas = contas.filter(conta => todasParcelasPagas(conta));
+        contasFiltradas = contasFiltradas.filter(conta => todasParcelasPagas(conta));
     }
     
     // Aplicar filtro de mês

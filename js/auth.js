@@ -41,20 +41,34 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
-    function validateEmail() {
+    async function validateEmail() {
         const email = emailInput.value.trim();
-        const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-        const emailExists = usuarios.some(u => u.email === email);
-
+        
         if (!email) {
             emailValidation.textContent = "Preencha seu e-mail";
             return false;
         } else if (!emailInput.validity.valid) {
             emailValidation.textContent = "E-mail inválido";
             return false;
-        } else if (emailExists) {
-            emailValidation.textContent = "Este e-mail já está cadastrado";
-            return false;
+        }
+        
+        // Verificar se o email já existe no Supabase
+        try {
+            const emailExists = await supabaseStorage.buscarUsuario(email);
+            if (emailExists) {
+                emailValidation.textContent = "Este e-mail já está cadastrado";
+                return false;
+            }
+        } catch (error) {
+            console.warn('Erro ao verificar email no Supabase, usando localStorage como fallback:', error);
+            // Fallback para localStorage
+            const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+            const emailExists = usuarios.some(u => u.email === email);
+
+            if (emailExists) {
+                emailValidation.textContent = "Este e-mail já está cadastrado";
+                return false;
+            }
         }
 
         emailValidation.textContent = "";
@@ -136,8 +150,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
-    function checkFormValidity() {
-        const valid = validateNome() && validateEmail() && validatePassword() && validateConfirmPassword();
+    async function checkFormValidity() {
+        const valid = validateNome() && await validateEmail() && validatePassword() && validateConfirmPassword();
         cadastroButton.disabled = !valid;
     }
 
@@ -163,32 +177,48 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Cadastro
-    cadastroForm.addEventListener('submit', function (e) {
+    cadastroForm.addEventListener('submit', async function (e) {
         e.preventDefault();
-        if (!validateNome() || !validateEmail() || !validatePassword() || !validateConfirmPassword()) return;
-
-        const novoUsuario = {
-            nome: nomeInput.value.trim(),
-            email: emailInput.value.trim(),
-            senha: passwordInput.value
-        };
-
-        // Usar a biblioteca storage para consistência
-        const usuarios = storage.getItem('usuarios') || [];
-        usuarios.push(novoUsuario);
-        storage.setItem('usuarios', usuarios);
         
-        // Para debug
-        console.log('Novo usuário cadastrado:', novoUsuario);
-        console.log('Lista atualizada de usuários:', usuarios);
+        // Validar todos os campos novamente
+        if (!validateNome() || !await validateEmail() || !validatePassword() || !validateConfirmPassword()) {
+            return;
+        }
 
-        cadastroMessage.textContent = "Cadastro realizado com sucesso! Redirecionando para o login...";
-        cadastroMessage.className = "alert alert-success";
-        cadastroMessage.style.display = "block";
-
-        cadastroForm.reset();
+        // Desabilitar botão durante o processo
         cadastroButton.disabled = true;
+        cadastroButton.textContent = 'Cadastrando...';
 
-        setTimeout(() => window.location.href = "index.html", 3000);
+        try {
+            const novoUsuario = {
+                nome: nomeInput.value.trim(),
+                email: emailInput.value.trim(),
+                senha: passwordInput.value
+            };
+
+            // Salvar usuário no Supabase
+            const usuarioSalvo = await supabaseStorage.salvarUsuario(novoUsuario);
+            
+            console.log('Novo usuário cadastrado:', usuarioSalvo);
+
+            cadastroMessage.textContent = "Cadastro realizado com sucesso! Redirecionando para o login...";
+            cadastroMessage.className = "alert alert-success";
+            cadastroMessage.style.display = "block";
+
+            cadastroForm.reset();
+            
+            setTimeout(() => window.location.href = "index.html", 3000);
+            
+        } catch (error) {
+            console.error('Erro ao cadastrar usuário:', error);
+            
+            cadastroMessage.textContent = "Erro ao realizar cadastro. Tente novamente.";
+            cadastroMessage.className = "alert alert-danger";
+            cadastroMessage.style.display = "block";
+            
+            // Reabilitar botão
+            cadastroButton.disabled = false;
+            cadastroButton.textContent = 'Cadastrar';
+        }
     });
 });

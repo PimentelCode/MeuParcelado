@@ -1,7 +1,7 @@
 // Inicialização da página de nova conta
 document.addEventListener('DOMContentLoaded', function() {
     // Verificar autenticação
-    const usuarioAtual = JSON.parse(localStorage.getItem('usuarioAtual'));
+    const usuarioAtual = supabaseStorage.getItem('usuarioAtual') || JSON.parse(localStorage.getItem('usuarioAtual'));
     if (!usuarioAtual) {
         window.location.href = 'index.html';
         return;
@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         
         if (confirm('Tem certeza que deseja sair?')) {
+            supabaseStorage.removeItem('usuarioAtual');
             localStorage.removeItem('usuarioAtual');
             window.location.href = 'index.html';
         }
@@ -272,25 +273,46 @@ document.getElementById('numero-parcelas').addEventListener('change', atualizarP
 const urlParams = new URLSearchParams(window.location.search);
 const contaId = urlParams.get('id');
 if (contaId) {
-  const usuarioAtual = JSON.parse(localStorage.getItem('usuarioAtual'));
-  const chaveDados = `contas_${usuarioAtual.email}`;
-  const contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
-  const conta = contas.find(c => c.id === contaId);
-  if (conta && conta.tipoPagamento === 'parcelado' && conta.parcelas) {
-    const pagas = conta.parcelas
-      .map((p, idx) => p.status === 'pago' ? idx + 1 : null)
-      .filter(x => x !== null);
-    setTimeout(() => atualizarCheckboxParcelasPagas(pagas), 300);
-  }
+  const usuarioAtual = supabaseStorage.getItem('usuarioAtual') || JSON.parse(localStorage.getItem('usuarioAtual'));
+  
+  // Buscar conta específica no Supabase
+  supabaseStorage.buscarConta(contaId, usuarioAtual.email)
+    .then(conta => {
+      if (conta && conta.tipoPagamento === 'parcelado' && conta.parcelas) {
+        const pagas = conta.parcelas
+          .map((p, idx) => p.status === 'pago' ? idx + 1 : null)
+          .filter(x => x !== null);
+        setTimeout(() => atualizarCheckboxParcelasPagas(pagas), 300);
+      }
+    })
+    .catch(error => {
+      console.warn('Erro ao buscar conta no Supabase, usando localStorage:', error);
+      // Fallback para localStorage
+      const chaveDados = `contas_${usuarioAtual.email}`;
+      const contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
+      const conta = contas.find(c => c.id === contaId);
+      if (conta && conta.tipoPagamento === 'parcelado' && conta.parcelas) {
+        const pagas = conta.parcelas
+          .map((p, idx) => p.status === 'pago' ? idx + 1 : null)
+          .filter(x => x !== null);
+        setTimeout(() => atualizarCheckboxParcelasPagas(pagas), 300);
+      }
+    });
 }
 
 // Ao salvar, coletar as parcelas pagas selecionadas
 const formNovaConta = document.getElementById('nova-conta-form');
-formNovaConta.addEventListener('submit', function(e) {
-  // ... existing code ...
+formNovaConta.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  // Obter dados do formulário
+  const nome = document.getElementById('nome').value;
+  const categoria = document.getElementById('categoria').value;
+  const valor = parseFloat(document.getElementById('valor').value);
+  const dataCompra = document.getElementById('data-compra').value;
   const tipoPagamento = document.getElementById('tipo-pagamento').value;
   const status = document.getElementById('status').value;
-  // ... existing code ...
+  
   const novaConta = {
     id: contaId || Date.now().toString(), // Usar ID existente se estiver editando
     nome: nome,
@@ -333,30 +355,56 @@ formNovaConta.addEventListener('submit', function(e) {
   }
   
   // Obter usuário atual
-  const usuarioAtual = JSON.parse(localStorage.getItem('usuarioAtual'));
+  const usuarioAtual = supabaseStorage.getItem('usuarioAtual') || JSON.parse(localStorage.getItem('usuarioAtual'));
   
-  // Definir a chave correta para armazenar as contas do usuário
-  const chaveDados = `contas_${usuarioAtual.email}`;
+  // Desabilitar botão durante o salvamento
+  const submitButton = formNovaConta.querySelector('button[type="submit"]');
+  const originalText = submitButton.textContent;
+  submitButton.disabled = true;
+  submitButton.textContent = 'Salvando...';
   
-  // Buscar contas existentes do usuário
-  let contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
-  
-  if (contaId) {
-    // Se estiver editando, encontrar e atualizar a conta existente
-    const contaIndex = contas.findIndex(c => c.id === contaId);
-    if (contaIndex !== -1) {
-      contas[contaIndex] = novaConta;
+  try {
+    // Salvar conta no Supabase
+    const contaSalva = await supabaseStorage.salvarConta({
+      ...novaConta,
+      usuario_email: usuarioAtual.email
+    });
+    
+    console.log('Conta salva com sucesso:', contaSalva);
+    alert('Conta salva com sucesso!');
+    window.location.href = 'contas.html';
+    
+  } catch (error) {
+    console.error('Erro ao salvar conta no Supabase:', error);
+    
+    // Fallback para localStorage
+    console.warn('Usando localStorage como fallback');
+    
+    const chaveDados = `contas_${usuarioAtual.email}`;
+    let contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
+    
+    if (contaId) {
+      // Se estiver editando, encontrar e atualizar a conta existente
+      const contaIndex = contas.findIndex(c => c.id === contaId);
+      if (contaIndex !== -1) {
+        contas[contaIndex] = novaConta;
+      } else {
+        contas.push(novaConta);
+      }
     } else {
+      // Se for nova conta, adicionar à lista
       contas.push(novaConta);
     }
-  } else {
-    // Se for nova conta, adicionar à lista
-    contas.push(novaConta);
+    
+    // Salvar no localStorage
+    localStorage.setItem(chaveDados, JSON.stringify(contas));
+    
+    alert('Conta salva com sucesso!');
+    window.location.href = 'contas.html';
+    
+  } finally {
+    // Reabilitar botão
+    submitButton.disabled = false;
+    submitButton.textContent = originalText;
   }
-  
-  // Salvar no localStorage
-  localStorage.setItem(chaveDados, JSON.stringify(contas));
-  
-  alert('Conta salva com sucesso!');
-  window.location.href = 'contas.html';
 });

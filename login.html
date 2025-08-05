@@ -196,29 +196,17 @@
   </style>
 
   <script>
-    document.getElementById('login-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      // Simple validation for demo purposes
-      if (email && password) {
-        // Store user session
-        localStorage.setItem('usuarioAtual', JSON.stringify({
-          email: email,
-          nome: email.split('@')[0],
-          loggedIn: true
-        }));
-        
-        // Redirect to dashboard
-        window.location.href = '/dashboard/';
-      } else {
-        alert('Por favor, preencha todos os campos.');
-      }
-    });
+    // Login form will be handled by login.js
   </script>
 
+  <!-- Supabase Dependencies -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/supabase-storage.js"></script>
+  
+  <!-- Application Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/login.js"></script>
   <script src="js/mobile-menu.js"></script>
 </body>
 </html>

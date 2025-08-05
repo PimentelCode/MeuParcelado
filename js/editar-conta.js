@@ -1,17 +1,33 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Verificar autenticação
-    const usuarioAtual = JSON.parse(localStorage.getItem('usuarioAtual'));
+    let usuarioAtual;
+    try {
+        usuarioAtual = await supabaseStorage.obterUsuarioAtual();
+        if (!usuarioAtual) {
+            // Fallback para localStorage
+            usuarioAtual = JSON.parse(localStorage.getItem('usuarioAtual'));
+        }
+    } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+        usuarioAtual = JSON.parse(localStorage.getItem('usuarioAtual'));
+    }
+    
     if (!usuarioAtual) {
         window.location.href = 'index.html';
         return;
     }
 
     // Configurar evento de logout
-    document.getElementById('logout-btn').addEventListener('click', function(e) {
+    document.getElementById('logout-btn').addEventListener('click', async function(e) {
         e.preventDefault();
         
         if (confirm('Tem certeza que deseja sair?')) {
-            localStorage.removeItem('usuarioAtual');
+            try {
+                await supabaseStorage.logout();
+            } catch (error) {
+                console.error('Erro no logout do Supabase:', error);
+                localStorage.removeItem('usuarioAtual');
+            }
             window.location.href = 'index.html';
         }
     });
@@ -25,8 +41,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Buscar a conta correta
-    const chaveDados = `contas_${usuarioAtual.email}`;
-    const contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
+    let contas = [];
+    try {
+        contas = await supabaseStorage.obterContas(usuarioAtual.email);
+    } catch (error) {
+        console.error('Erro ao buscar contas do Supabase:', error);
+        // Fallback para localStorage
+        const chaveDados = `contas_${usuarioAtual.email}`;
+        contas = JSON.parse(localStorage.getItem(chaveDados)) || [];
+    }
+    
     const conta = contas.find(c => c.id == contaId);
     if (!conta) {
         alert('Conta não encontrada!');
@@ -170,15 +194,36 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Atualizar conta no localStorage
-        const indice = contas.findIndex(c => c.id == contaId);
-        if (indice !== -1) {
-            contas[indice] = contaAtualizada;
-            localStorage.setItem(chaveDados, JSON.stringify(contas));
+        // Atualizar conta
+        try {
+supabaseStorage.atualizarConta(contaAtualizada).then(() => {
+    alert('Conta atualizada com sucesso!');
+    window.location.href = 'contas.html';
+}).catch((error) => {
+    console.error('Erro ao atualizar conta no Supabase:', error);
+    throw error; // Re-throw to trigger catch block
+});
             alert('Conta atualizada com sucesso!');
             window.location.href = 'contas.html';
-        } else {
-            alert('Erro ao atualizar conta. Tente novamente.');
+        } catch (error) {
+            console.error('Erro ao atualizar conta no Supabase:', error);
+            // Fallback para localStorage
+            try {
+                const chaveDados = `contas_${usuarioAtual.email}`;
+                const contasLocal = JSON.parse(localStorage.getItem(chaveDados)) || [];
+                const indice = contasLocal.findIndex(c => c.id == contaId);
+                if (indice !== -1) {
+                    contasLocal[indice] = contaAtualizada;
+                    localStorage.setItem(chaveDados, JSON.stringify(contasLocal));
+                    alert('Conta atualizada com sucesso!');
+                    window.location.href = 'contas.html';
+                } else {
+                    alert('Erro ao atualizar conta. Tente novamente.');
+                }
+            } catch (localError) {
+                console.error('Erro no fallback localStorage:', localError);
+                alert('Erro ao atualizar conta. Tente novamente.');
+            }
         }
     });
 });
