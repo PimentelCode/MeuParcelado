@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Supabase - MeuParcelado</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        #resultado {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .resultado-sucesso {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .resultado-erro {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .resultado-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-conectado {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-desconectado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .instrucoes {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste de Integração Supabase</h1>
+        
+        <div class="instrucoes">
+            <h3>📋 Instruções:</h3>
+            <ol>
+                <li>Certifique-se de que o arquivo <code>js/supabase-config.js</code> está configurado corretamente</li>
+                <li>Verifique se as credenciais do Supabase estão corretas</li>
+                <li>Execute os testes abaixo para verificar a integração</li>
+                <li>Consulte o console do navegador (F12) para detalhes técnicos</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h3>🔌 Status da Conexão</h3>
+            <p>Status atual: <span id="statusConexao" class="status status-desconectado">Verificando...</span></p>
+            <button class="btn" onclick="verificarConexao()">🔄 Verificar Conexão</button>
+        </div>
+
+        <div class="test-section">
+            <h3>⚡ Testes Rápidos</h3>
+            <p>Execute um teste básico de conectividade:</p>
+            <button class="btn btn-success" onclick="executarTesteRapido()">🚀 Teste Rápido</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔬 Testes Completos</h3>
+            <p>Execute uma bateria completa de testes (pode demorar alguns segundos):</p>
+            <button class="btn btn-warning" onclick="executarTestesCompletos()">🧪 Testes Completos</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🛠️ Testes Manuais</h3>
+            <p>Execute testes específicos:</p>
+            <button class="btn" onclick="testarTabelas()">📊 Testar Tabelas</button>
+            <button class="btn" onclick="testarAutenticacao()">🔐 Testar Auth</button>
+            <button class="btn" onclick="testarPerformance()">⚡ Testar Performance</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Executando testes...</p>
+        </div>
+
+        <div id="resultado"></div>
+    </div>
+
+    <!-- Dependências do Supabase -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-storage.js"></script>
+    <script src="js/teste-supabase.js"></script>
+
+    <script>
+        let resultadoDiv = document.getElementById('resultado');
+        let statusConexao = document.getElementById('statusConexao');
+        let loading = document.getElementById('loading');
+
+        // Função para mostrar resultado na tela
+        function mostrarResultado(texto, tipo = 'info') {
+            resultadoDiv.className = `resultado-${tipo}`;
+            resultadoDiv.textContent = texto;
+            resultadoDiv.style.display = 'block';
+        }
+
+        // Função para mostrar loading
+        function mostrarLoading(show = true) {
+            loading.style.display = show ? 'block' : 'none';
+        }
+
+        // Verificar conexão inicial
+        async function verificarConexao() {
+            try {
+                if (!window.supabaseClient) {
+                    statusConexao.textContent = 'Desconectado';
+                    statusConexao.className = 'status status-desconectado';
+                    mostrarResultado('❌ Supabase não carregado. Verifique a configuração.', 'erro');
+                    return;
+                }
+
+                const response = await fetch(SUPABASE_CONFIG.url + '/rest/v1/', {
+                    headers: { 'apikey': SUPABASE_CONFIG.anonKey }
+                });
+
+                if (response.ok) {
+                    statusConexao.textContent = 'Conectado';
+                    statusConexao.className = 'status status-conectado';
+                    mostrarResultado('✅ Conexão com Supabase estabelecida com sucesso!', 'sucesso');
+                } else {
+                    statusConexao.textContent = 'Erro de Conexão';
+                    statusConexao.className = 'status status-desconectado';
+                    mostrarResultado(`❌ Erro de conexão: ${response.status}`, 'erro');
+                }
+            } catch (error) {
+                statusConexao.textContent = 'Erro';
+                statusConexao.className = 'status status-desconectado';
+                mostrarResultado(`❌ Erro: ${error.message}`, 'erro');
+            }
+        }
+
+        // Teste rápido
+        async function executarTesteRapido() {
+            mostrarLoading(true);
+            try {
+                const resultado = await testeRapidoSupabase();
+                mostrarLoading(false);
+                
+                if (resultado) {
+                    mostrarResultado('✅ Teste rápido passou! Supabase está funcionando.\n\n💡 Dica: Execute os testes completos para uma verificação mais detalhada.', 'sucesso');
+                } else {
+                    mostrarResultado('❌ Teste rápido falhou. Verifique a configuração e o console para mais detalhes.', 'erro');
+                }
+            } catch (error) {
+                mostrarLoading(false);
+                mostrarResultado(`❌ Erro no teste rápido: ${error.message}`, 'erro');
+            }
+        }
+
+        // Testes completos
+        async function executarTestesCompletos() {
+            mostrarLoading(true);
+            try {
+                const resultado = await testarSupabase();
+                mostrarLoading(false);
+                
+                if (resultado.sucesso) {
+                    mostrarResultado(`🎉 TODOS OS TESTES PASSARAM!\n\n📊 Resumo:\n✅ Passou: ${resultado.passou}\n❌ Falhou: ${resultado.falhou}\n⚠️ Avisos: ${resultado.avisos}\n📝 Total: ${resultado.total}\n\nSupabase está funcionando perfeitamente!`, 'sucesso');
+                } else {
+                    mostrarResultado(`⚠️ ALGUNS TESTES FALHARAM\n\n📊 Resumo:\n✅ Passou: ${resultado.passou}\n❌ Falhou: ${resultado.falhou}\n⚠️ Avisos: ${resultado.avisos}\n📝 Total: ${resultado.total}\n\nVerifique o console para detalhes dos erros.`, 'erro');
+                }
+            } catch (error) {
+                mostrarLoading(false);
+                mostrarResultado(`❌ Erro nos testes completos: ${error.message}`, 'erro');
+            }
+        }
+
+        // Testar tabelas
+        async function testarTabelas() {
+            mostrarLoading(true);
+            try {
+                const tester = new SupabaseTester();
+                await tester.testeTabelas();
+                mostrarLoading(false);
+                mostrarResultado('✅ Teste de tabelas concluído. Verifique o console para detalhes.', 'sucesso');
+            } catch (error) {
+                mostrarLoading(false);
+                mostrarResultado(`❌ Erro no teste de tabelas: ${error.message}`, 'erro');
+            }
+        }
+
+        // Testar autenticação
+        async function testarAutenticacao() {
+            mostrarLoading(true);
+            try {
+                const tester = new SupabaseTester();
+                await tester.testeCadastroUsuario();
+                await tester.testeBuscaUsuario();
+                await tester.limpezaTeste();
+                mostrarLoading(false);
+                mostrarResultado('✅ Teste de autenticação concluído. Verifique o console para detalhes.', 'sucesso');
+            } catch (error) {
+                mostrarLoading(false);
+                mostrarResultado(`❌ Erro no teste de autenticação: ${error.message}`, 'erro');
+            }
+        }
+
+        // Testar performance
+        async function testarPerformance() {
+            mostrarLoading(true);
+            try {
+                const tester = new SupabaseTester();
+                await tester.testePerformance();
+                mostrarLoading(false);
+                mostrarResultado('✅ Teste de performance concluído. Verifique o console para detalhes.', 'sucesso');
+            } catch (error) {
+                mostrarLoading(false);
+                mostrarResultado(`❌ Erro no teste de performance: ${error.message}`, 'erro');
+            }
+        }
+
+        // Verificar conexão ao carregar a página
+        window.addEventListener('load', () => {
+            setTimeout(verificarConexao, 1000);
+        });
+
+        // Interceptar logs do console para mostrar na tela também
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            
+            // Se for um log de teste, mostrar na tela também
+            const message = args.join(' ');
+            if (message.includes('✅') || message.includes('❌') || message.includes('⚠️')) {
+                const currentResult = resultadoDiv.textContent;
+                if (currentResult && !currentResult.includes('Resumo:')) {
+                    resultadoDiv.textContent = currentResult + '\n' + message;
+                }
+            }
+        };
+    </script>
+</body>
+</html>
